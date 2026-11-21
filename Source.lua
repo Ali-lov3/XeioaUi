@@ -362,6 +362,53 @@ local Library do
 
     Library.Theme = TableClone(Themes["Preset"])
 
+    pcall(function()
+        Library.Lucide = loadstring(game:HttpGet("https://raw.githubusercontent.com/SiriusSoftwareLtd/Rayfield/main/icons.lua"))()
+    end)
+
+    Library.ResolveIcon = function(Icon)
+        local Lucide = Library.Lucide
+        if type(Icon) == "number" then return "rbxassetid://" .. Icon end
+        if type(Icon) == "string" then
+            if string.match(Icon, "^rbxassetid://") then return Icon end
+            if string.match(Icon, "^%d+$") then return "rbxassetid://" .. Icon end
+            local Name = string.lower(Icon)
+            if type(Lucide) == "function" then
+                local ok, Data = pcall(Lucide, Name)
+                if ok and type(Data) == "table" then
+                    local Id = Data.id or Data.Id or Data[1]
+                    local Size = Data.imageRectSize or Data.ImageRectSize or Data[2]
+                    local Offset = Data.imageRectOffset or Data.imageRectPosition or Data.ImageRectOffset or Data[3]
+                    if Id then return "rbxassetid://" .. tostring(Id), Offset, Size end
+                end
+            elseif type(Lucide) == "table" then
+                for _, Set in { Lucide["48px"], Lucide["256px"], Lucide } do
+                    if type(Set) == "table" then
+                        local Data = Set[Name]
+                        if type(Data) == "table" and Data[1] then
+                            return "rbxassetid://" .. tostring(Data[1]), Data[3], Data[2]
+                        end
+                    end
+                end
+            end
+        end
+        return "rbxassetid://0"
+    end
+
+    Library.ToVector2 = function(Value)
+        if typeof(Value) == "Vector2" then return Value end
+        if type(Value) == "table" then return Vector2.new(Value[1] or Value.X or 0, Value[2] or Value.Y or 0) end
+        return Vector2.new(0, 0)
+    end
+
+    Library.ApplyIcon = function(Object, Icon)
+        if not Icon then return end
+        local Image, Offset, Size = Library.ResolveIcon(Icon)
+        Object.Image = Image
+        if Offset then Object.ImageRectOffset = Library.ToVector2(Offset) end
+        if Size then Object.ImageRectSize = Library.ToVector2(Size) end
+    end
+
     local Keys = {
         ["Unknown"] = "Unknown", ["Backspace"] = "Back", ["Tab"] = "Tab",
         ["Clear"] = "Clear", ["Return"] = "Return", ["Pause"] = "Pause",
@@ -2321,8 +2368,8 @@ local Library do
                 TextColor3 = FromRGB(255, 255, 255),
                 BorderColor3 = FromRGB(0, 0, 0),
                 Text = Data.Name,
-                Size = UDim2New(1, -16, 0, 15),
-                Position = UDim2New(0, 8, 0, 0),
+                Size = UDim2New(1, -42, 0, 15),
+                Position = UDim2New(0, 34, 0, 0),
                 BackgroundTransparency = 1,
                 TextWrapped = true,
                 TextXAlignment = Enum.TextXAlignment.Left,
@@ -2341,8 +2388,8 @@ local Library do
                 TextTransparency = 0.4000000059604645,
                 Text = Data.Content,
                 TextWrapped = true,
-                Size = UDim2New(1, -16, 0, 15),
-                Position = UDim2New(0, 8, 0, 18),
+                Size = UDim2New(1, -42, 0, 15),
+                Position = UDim2New(0, 34, 0, 18),
                 BorderSizePixel = 0,
                 BackgroundTransparency = 1,
                 TextXAlignment = Enum.TextXAlignment.Left,
@@ -2352,6 +2399,19 @@ local Library do
                 BackgroundColor3 = FromRGB(255, 255, 255)
             })
             Items["Description"]:AddToTheme({ TextColor3 = "Text" })
+
+            local IconId = tostring(Data.Icon or Data.icon or Library.NotificationIcon or "77434646025119")
+
+            Items["Icon"] = Instances:Create("ImageLabel", {
+                Parent = Items["Notification"].Instance,
+                Name = "\0",
+                BackgroundTransparency = 1,
+                BorderSizePixel = 0,
+                ScaleType = Enum.ScaleType.Fit,
+                Position = UDim2New(0, 8, 0, 5),
+                Size = UDim2New(0, 22, 0, 22)
+            })
+            Library.ApplyIcon(Items["Icon"].Instance, IconId)
 
             Instances:Create("UICorner", {
                 Parent = Items["Notification"].Instance,
@@ -2414,16 +2474,15 @@ local Library do
                 BorderColor3 = FromRGB(0, 0, 0),
                 Size = UDim2New(1, 0, 1, 0),
                 BorderSizePixel = 0,
-                BackgroundColor3 = FromRGB(246, 178, 255)
+                BackgroundColor3 = FromRGB(255, 255, 255)
             })
-            Items["Accent"]:AddToTheme({ BackgroundColor3 = "Accent" })
 
             Instances:Create("UIGradient", {
                 Parent = Items["Accent"].Instance,
                 Name = "\0",
-                Rotation = 90,
-                Color = RGBSequence{ RGBSequenceKeypoint(0, FromRGB(255, 255, 255)), RGBSequenceKeypoint(1, FromRGB(218, 218, 218)) }
-            }):AddToTheme({ Color = function() return RGBSequence{ RGBSequenceKeypoint(0, FromRGB(255, 255, 255)), RGBSequenceKeypoint(1, Library.Theme["Gradient"]) } end })
+                Rotation = 0,
+                Color = RGBSequence{ RGBSequenceKeypoint(0, Library.Theme.Accent), RGBSequenceKeypoint(1, FromRGB(0, 0, 0)) }
+            }):AddToTheme({ Color = function() return RGBSequence{ RGBSequenceKeypoint(0, Library.Theme.Accent), RGBSequenceKeypoint(1, FromRGB(0, 0, 0)) } end })
 
             Instances:Create("UICorner", {
                 Parent = Items["Accent"].Instance,
@@ -2441,7 +2500,7 @@ local Library do
                 Value.Instance.TextTransparency = 1
             elseif Value.Instance:IsA("UIStroke") then
                 Value.Instance.Transparency = 1
-            elseif Value.Instance:IsA("ImageButton") then
+            elseif Value.Instance:IsA("ImageButton") or Value.Instance:IsA("ImageLabel") then
                 Value.Instance.ImageTransparency = 1
             end
         end
@@ -2458,7 +2517,7 @@ local Library do
                     Value:Tween(nil, { TextTransparency = 0.4 })
                 elseif Value.Instance:IsA("UIStroke") then
                     Value:Tween(nil, { Transparency = 0 })
-                elseif Value.Instance:IsA("ImageButton") then
+                elseif Value.Instance:IsA("ImageButton") or Value.Instance:IsA("ImageLabel") then
                     Value:Tween(nil, { ImageTransparency = 0 })
                 end
             end
@@ -2474,7 +2533,7 @@ local Library do
                         Value:Tween(nil, { TextTransparency = 1 })
                     elseif Value.Instance:IsA("UIStroke") then
                         Value:Tween(nil, { Transparency = 1 })
-                    elseif Value.Instance:IsA("ImageButton") then
+                    elseif Value.Instance:IsA("ImageButton") or Value.Instance:IsA("ImageLabel") then
                         Value:Tween(nil, { ImageTransparency = 1 })
                     end
                 end
@@ -2493,7 +2552,7 @@ local Library do
                         Value:Tween(nil, { TextTransparency = 1 })
                     elseif Value.Instance:IsA("UIStroke") then
                         Value:Tween(nil, { Transparency = 1 })
-                    elseif Value.Instance:IsA("ImageButton") then
+                    elseif Value.Instance:IsA("ImageButton") or Value.Instance:IsA("ImageLabel") then
                         Value:Tween(nil, { ImageTransparency = 1 })
                     end
                 end
@@ -5398,6 +5457,7 @@ local Library do
                 end
             end)
 
+            Library.NotificationIcon = Window.Logo
             Window:SetOpen(true)
             task.defer(function() Library:AttachExpressButton(Window) end)
 
@@ -5466,7 +5526,8 @@ local Library do
                     Parent = Items["Highlight"].Instance,
                     Name = "\0",
                     Rotation = 0,
-                    Color = RGBSequence{ RGBSequenceKeypoint(0, Library.Theme.Accent), RGBSequenceKeypoint(1, FromRGB(0, 0, 0)) }
+                    Color = RGBSequence{ RGBSequenceKeypoint(0, Library.Theme.Accent), RGBSequenceKeypoint(1, FromRGB(0, 0, 0)) },
+                    Transparency = NumSequence{ NumSequenceKeypoint(0, 0.1), NumSequenceKeypoint(0.6, 0.65), NumSequenceKeypoint(1, 1) }
                 }):AddToTheme({ Color = function() return RGBSequence{ RGBSequenceKeypoint(0, Library.Theme.Accent), RGBSequenceKeypoint(1, FromRGB(0, 0, 0)) } end })
 
                 Items["Line"] = Instances:Create("Frame", {
@@ -5512,7 +5573,6 @@ local Library do
                         ImageTransparency = 0.4000000059604645,
                         BorderColor3 = FromRGB(0, 0, 0),
                         AnchorPoint = Vector2New(0, 0.5),
-                        Image = Page.Icon,
                         BackgroundTransparency = 1,
                         Position = UDim2New(0, 3, 0.5, 0),
                         Size = UDim2New(0, 16, 0, 16),
@@ -5520,6 +5580,7 @@ local Library do
                         BackgroundColor3 = FromRGB(255, 255, 255)
                     })
                     Items["Icon"]:AddToTheme({ ImageColor3 = "Text" })
+                    Library.ApplyIcon(Items["Icon"].Instance, Page.Icon)
                 end
 
                 Items["Page"] = Instances:Create("Frame", {
@@ -5589,7 +5650,7 @@ local Library do
 
                 if Page.Active then
                     Items["Text"]:Tween(nil, { TextTransparency = 0 })
-                    Items["Highlight"]:Tween(nil, { BackgroundTransparency = 0.35 })
+                    Items["Highlight"]:Tween(nil, { BackgroundTransparency = 0 })
                     Items["Line"]:Tween(nil, { Size = UDim2New(0, 3, 0, 18) })
                     if Page.Icon then
                         Items["Icon"]:ChangeItemTheme({ ImageColor3 = "Accent" })
@@ -5659,6 +5720,7 @@ local Library do
                 Window = self.Window,
                 Page = self,
                 Name = Data.Name or Data.name or "Page",
+                Icon = Data.Icon or Data.icon or nil,
                 Columns = Data.Columns or Data.columns or 2,
                 Active = false,
                 Items = {},
@@ -5699,13 +5761,30 @@ local Library do
                     AnchorPoint = Vector2New(0, 0.5),
                     BorderSizePixel = 0,
                     BackgroundTransparency = 1,
-                    Position = UDim2New(0, 8, 0.5, 0),
+                    Position = UDim2New(0, Page.Icon and 30 or 8, 0.5, 0),
                     BorderColor3 = FromRGB(0, 0, 0),
                     AutomaticSize = Enum.AutomaticSize.X,
                     TextSize = 14,
                     BackgroundColor3 = FromRGB(255, 255, 255)
                 })
                 Items["Text"]:AddToTheme({ TextColor3 = "Text" })
+
+                if Page.Icon then
+                    Items["Icon"] = Instances:Create("ImageLabel", {
+                        Parent = Items["Inactive"].Instance,
+                        Name = "\0",
+                        ImageTransparency = 0.4000000059604645,
+                        BorderColor3 = FromRGB(0, 0, 0),
+                        AnchorPoint = Vector2New(0, 0.5),
+                        BackgroundTransparency = 1,
+                        Position = UDim2New(0, 10, 0.5, 0),
+                        Size = UDim2New(0, 16, 0, 16),
+                        BorderSizePixel = 0,
+                        BackgroundColor3 = FromRGB(255, 255, 255)
+                    })
+                    Items["Icon"]:AddToTheme({ ImageColor3 = "Text" })
+                    Library.ApplyIcon(Items["Icon"].Instance, Page.Icon)
+                end
 
                 Instances:Create("UIPadding", {
                     Parent = Items["Inactive"].Instance,
@@ -5910,12 +5989,20 @@ local Library do
 
                 if Bool then
                     Items["Text"]:Tween(nil, { TextTransparency = 0 })
+                    if Page.Icon then
+                        Items["Icon"]:ChangeItemTheme({ ImageColor3 = "Accent" })
+                        Items["Icon"]:Tween(nil, { ImageColor3 = Library.Theme.Accent, ImageTransparency = 0 })
+                    end
                     Items["Inactive"]:Tween(nil, { BackgroundTransparency = 0 })
                     Items["Liner"]:Tween(TweenInfo.new(Library.Tween.Time + 0.1, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), { BackgroundTransparency = 0, Size = UDim2New(1, 0, 0, 3) })
                     Items["Page"]:Tween(TweenInfo.new(0.6, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), { Position = UDim2New(0, 0, 0, 0) })
                     for Index, Value in Library.OpenFrames do Value:SetOpen(false) end
                 else
                     Items["Text"]:Tween(nil, { TextTransparency = 0.4 })
+                    if Page.Icon then
+                        Items["Icon"]:ChangeItemTheme({ ImageColor3 = "Text" })
+                        Items["Icon"]:Tween(nil, { ImageColor3 = Library.Theme.Text, ImageTransparency = 0.4 })
+                    end
                     Items["Inactive"]:Tween(nil, { BackgroundTransparency = 1 })
                     Items["Liner"]:Tween(TweenInfo.new(Library.Tween.Time, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), { BackgroundTransparency = 1, Size = UDim2New(0, 0, 0, 3) })
                     Items["Page"]:Tween(TweenInfo.new(0.6, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), { Position = UDim2New(0, 0, 0, 35) })
@@ -7362,17 +7449,16 @@ local Library do
                     BorderColor3 = FromRGB(0, 0, 0),
                     Size = UDim2New(0.5, 0, 1, 0),
                     BorderSizePixel = 0,
-                    BackgroundColor3 = FromRGB(246, 178, 255)
+                    BackgroundColor3 = FromRGB(255, 255, 255)
                 })
-                Items["Accent"]:AddToTheme({ BackgroundColor3 = "Accent" })
                 Instances:Create("UICorner", { Parent = Items["Accent"].Instance, Name = "\0", CornerRadius = UDimNew(0, 6) })
 
                 Instances:Create("UIGradient", {
                     Parent = Items["Accent"].Instance,
                     Name = "\0",
-                    Rotation = 90,
-                    Color = RGBSequence{ RGBSequenceKeypoint(0, FromRGB(255, 255, 255)), RGBSequenceKeypoint(1, FromRGB(218, 218, 218)) }
-                }):AddToTheme({ Color = function() return RGBSequence{ RGBSequenceKeypoint(0, FromRGB(255, 255, 255)), RGBSequenceKeypoint(1, Library.Theme["Gradient"]) } end })
+                    Rotation = 0,
+                    Color = RGBSequence{ RGBSequenceKeypoint(0, Library.Theme.Accent), RGBSequenceKeypoint(1, FromRGB(0, 0, 0)) }
+                }):AddToTheme({ Color = function() return RGBSequence{ RGBSequenceKeypoint(0, Library.Theme.Accent), RGBSequenceKeypoint(1, FromRGB(0, 0, 0)) } end })
 
                 Items["Dragger"] = Instances:Create("TextButton", {
                     Parent = Items["Accent"].Instance,

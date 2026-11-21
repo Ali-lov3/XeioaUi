@@ -9,21 +9,24 @@ local Window = Library:MakeWindow({
 
 local MainTab = Window:MakeTab({
     Name = "Tab",
-    Icon = "rbxassetid://10723407389"
+    Icon = "home"
 })
 
 local ElementsSubTab = MainTab:AddSubTab({
     Name = "SubTab 1",
+    Icon = "settings",
     Columns = 2
 })
 
 local ExtrasSubTab = MainTab:AddSubTab({
     Name = "Subtab 2",
+    Icon = "layers",
     Columns = 2
 })
 
 local PlayerlistSubTab = MainTab:AddSubTab({
     Name = "Subtab 3",
+    Icon = "users",
     Columns = 1
 })
 
@@ -187,6 +190,7 @@ NotificationSection:AddButton({
         Library:MakeNotification({
             Name = "Example Notification",
             Content = "Example Notification content",
+            Icon = "bell",
             Time = 5
         })
     end
