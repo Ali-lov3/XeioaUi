@@ -23,6 +23,34 @@ local Watermark = Library:MakeWatermark({
     ShowPing = true
 })
 
+local HomeTab = Window:MakeTab({
+    Name = "Home",
+    Icon = "home"
+})
+
+local HomeManager = HomeTab:HomeManager({})
+
+HomeManager:AddChangelog({
+    Version = "v1.0.0",
+    Date = "2026-11-21",
+    Title = "Release",
+    Changes = {
+        "Added Home tab with account, game and server info",
+        "Added Server Hop and Rejoin Server",
+        "Added Changelogs tab"
+    }
+})
+
+HomeManager:AddChangelog({
+    Version = "v1.0.1",
+    Date = "2026-11-22",
+    Title = "Fixes",
+    Changes = {
+        "Cleaner tab indicator",
+        "Watermark and loading screen match the GUI style"
+    }
+})
+
 local MainTab = Window:MakeTab({
     Name = "Tab",
     Icon = "home"

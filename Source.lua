@@ -6020,22 +6020,6 @@ local Library do
                     BackgroundColor3 = FromRGB(255, 255, 255)
                 })
 
-                Items["Highlight"] = Instances:Create("Frame", {
-                    Parent = Items["Inactive"].Instance,
-                    Name = "\0",
-                    BackgroundColor3 = Library.Theme.Accent,
-                    BackgroundTransparency = 1,
-                    BorderSizePixel = 0,
-                    Size = UDim2New(1, 0, 1, 0)
-                })
-                Items["Highlight"]:AddToTheme({ BackgroundColor3 = "Accent" })
-
-                Instances:Create("UICorner", {
-                    Parent = Items["Highlight"].Instance,
-                    Name = "\0",
-                    CornerRadius = UDimNew(0, 6)
-                })
-
                 Items["Line"] = Instances:Create("Frame", {
                     Parent = Items["Inactive"].Instance,
                     Name = "\0",
@@ -6064,7 +6048,7 @@ local Library do
                     AnchorPoint = Vector2New(0, 0.5),
                     BorderSizePixel = 0,
                     BackgroundTransparency = 1,
-                    Position = UDim2New(0, Page.Icon and 30 or 8, 0.5, 0),
+                    Position = UDim2New(0, Page.Icon and 38 or 16, 0.5, 0),
                     BorderColor3 = FromRGB(0, 0, 0),
                     AutomaticSize = Enum.AutomaticSize.X,
                     TextSize = 18,
@@ -6080,7 +6064,7 @@ local Library do
                         BorderColor3 = FromRGB(0, 0, 0),
                         AnchorPoint = Vector2New(0, 0.5),
                         BackgroundTransparency = 1,
-                        Position = UDim2New(0, 3, 0.5, 0),
+                        Position = UDim2New(0, 14, 0.5, 0),
                         Size = UDim2New(0, 16, 0, 16),
                         BorderSizePixel = 0,
                         BackgroundColor3 = FromRGB(255, 255, 255)
@@ -6156,7 +6140,6 @@ local Library do
 
                 if Page.Active then
                     Items["Text"]:Tween(nil, { TextTransparency = 0 })
-                    Items["Highlight"]:Tween(nil, { BackgroundTransparency = 0.85 })
                     Items["Line"]:Tween(nil, { Size = UDim2New(0, 3, 0, 18) })
                     if Page.Icon then
                         Items["Icon"]:ChangeItemTheme({ ImageColor3 = "Accent" })
@@ -6166,7 +6149,6 @@ local Library do
                     for Index, Value in Library.OpenFrames do Value:SetOpen(false) end
                 else
                     Items["Text"]:Tween(nil, { TextTransparency = 0.4 })
-                    Items["Highlight"]:Tween(nil, { BackgroundTransparency = 1 })
                     Items["Line"]:Tween(nil, { Size = UDim2New(0, 3, 0, 0) })
                     if Page.Icon then
                         Items["Icon"]:ChangeItemTheme({ ImageColor3 = "Text" })
@@ -6529,6 +6511,258 @@ local Library do
             ApplySearchFilter()
             TableInsert(Page.Page.SubPages, Page)
             return setmetatable(Page, Library.Pages)
+        end
+
+        Library.Pages.HomeManager = function(self, Data)
+            Data = Data or {}
+            local HomeManager = {
+                Window = self.Window,
+                Tab = self,
+                Changelogs = {},
+                ChangelogCount = 0
+            }
+
+            local HomeSubTab = self:AddSubTab({
+                Name = Data.HomeName or "Home",
+                Icon = Data.HomeIcon or "home",
+                Columns = 2
+            })
+            local ChangelogSubTab = self:AddSubTab({
+                Name = Data.ChangelogName or "Changelogs",
+                Icon = Data.ChangelogIcon or "history",
+                Columns = 1
+            })
+
+            for _, SubTab in { HomeSubTab, ChangelogSubTab } do
+                SubTab.Items["Searchbar"].Instance.Visible = false
+                SubTab.Items["Columns"].Instance.Size = UDim2New(1, 0, 1, 0)
+            end
+
+            HomeManager.HomeSubTab = HomeSubTab
+            HomeManager.ChangelogSubTab = ChangelogSubTab
+
+            local function MakeCard(Parent, Height)
+                local Card = Instances:Create("Frame", {
+                    Parent = Parent,
+                    Name = "\0",
+                    Size = UDim2New(1, 0, 0, Height),
+                    BorderSizePixel = 0,
+                    BackgroundColor3 = FromRGB(17, 16, 20)
+                })
+                Card:AddToTheme({ BackgroundColor3 = "Background" })
+                Instances:Create("UICorner", {
+                    Parent = Card.Instance,
+                    Name = "\0",
+                    CornerRadius = UDimNew(0, 6)
+                })
+                Instances:Create("UIStroke", {
+                    Parent = Card.Instance,
+                    Name = "\0",
+                    Color = FromRGB(36, 33, 42),
+                    ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+                }):AddToTheme({ Color = "Border" })
+                return Card
+            end
+
+            local function MakeText(Parent, Text, Size, Position, TextSize, Transparency, UseSubfont)
+                local Label = Instances:Create("TextLabel", {
+                    Parent = Parent,
+                    Name = "\0",
+                    FontFace = UseSubfont and Library.Subfont or Library.Font,
+                    TextColor3 = FromRGB(255, 255, 255),
+                    TextTransparency = Transparency or 0,
+                    Text = Text,
+                    TextSize = TextSize,
+                    TextXAlignment = Enum.TextXAlignment.Left,
+                    TextTruncate = Enum.TextTruncate.AtEnd,
+                    Size = Size,
+                    Position = Position,
+                    BackgroundTransparency = 1,
+                    BorderSizePixel = 0
+                })
+                Label:AddToTheme({ TextColor3 = "Text" })
+                return Label
+            end
+
+            local function MakeImage(Parent, Position, Size, Radius)
+                local Image = Instances:Create("ImageLabel", {
+                    Parent = Parent,
+                    Name = "\0",
+                    Position = Position,
+                    Size = Size,
+                    ScaleType = Enum.ScaleType.Crop,
+                    BorderSizePixel = 0,
+                    BackgroundColor3 = FromRGB(41, 40, 49)
+                })
+                Image:AddToTheme({ BackgroundColor3 = "Element" })
+                Instances:Create("UICorner", {
+                    Parent = Image.Instance,
+                    Name = "\0",
+                    CornerRadius = Radius
+                })
+                Instances:Create("UIStroke", {
+                    Parent = Image.Instance,
+                    Name = "\0",
+                    Color = FromRGB(36, 33, 42),
+                    ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+                }):AddToTheme({ Color = "Border" })
+                return Image
+            end
+
+            local AccountSection = HomeSubTab:AddSection({ Name = "Account", Side = 1 })
+            local AccountCard = MakeCard(AccountSection.Items["Content"].Instance, 72)
+            local Avatar = MakeImage(AccountCard.Instance, UDim2New(0, 10, 0, 10), UDim2New(0, 52, 0, 52), UDimNew(1, 0))
+            MakeText(AccountCard.Instance, LocalPlayer.DisplayName, UDim2New(1, -78, 0, 18), UDim2New(0, 70, 0, 11), 16, 0, false)
+            MakeText(AccountCard.Instance, "@" .. LocalPlayer.Name, UDim2New(1, -78, 0, 16), UDim2New(0, 70, 0, 31), 13, 0.4, true)
+            MakeText(AccountCard.Instance, "ID: " .. tostring(LocalPlayer.UserId), UDim2New(1, -78, 0, 14), UDim2New(0, 70, 0, 48), 12, 0.5, true)
+
+            task.spawn(function()
+                local Success, Result = pcall(function()
+                    return (Players:GetUserThumbnailAsync(LocalPlayer.UserId, Enum.ThumbnailType.HeadShot, Enum.ThumbnailSize.Size150x150))
+                end)
+                if Success and Result and Avatar.Instance.Parent then
+                    Avatar.Instance.Image = Result
+                end
+            end)
+
+            local GameSection = HomeSubTab:AddSection({ Name = "Game", Side = 2 })
+            local GameCard = MakeCard(GameSection.Items["Content"].Instance, 72)
+            local GameIcon = MakeImage(GameCard.Instance, UDim2New(0, 10, 0, 10), UDim2New(0, 52, 0, 52), UDimNew(0, 6))
+            GameIcon.Instance.Image = "rbxthumb://type=GameIcon&id=" .. tostring(game.GameId) .. "&w=150&h=150"
+            local GameName = MakeText(GameCard.Instance, tostring(game.Name), UDim2New(1, -78, 0, 18), UDim2New(0, 70, 0, 11), 16, 0, false)
+            MakeText(GameCard.Instance, "Place ID: " .. tostring(game.PlaceId), UDim2New(1, -78, 0, 16), UDim2New(0, 70, 0, 31), 13, 0.4, true)
+            MakeText(GameCard.Instance, "Universe ID: " .. tostring(game.GameId), UDim2New(1, -78, 0, 14), UDim2New(0, 70, 0, 48), 12, 0.5, true)
+
+            task.spawn(function()
+                local Success, Info = pcall(function()
+                    return MarketplaceService:GetProductInfo(game.PlaceId)
+                end)
+                if Success and Info and Info.Name and GameName.Instance.Parent then
+                    GameName.Instance.Text = tostring(Info.Name)
+                end
+            end)
+
+            local ServerSection = HomeSubTab:AddSection({ Name = "Server", Side = 1 })
+            local ServerCard = MakeCard(ServerSection.Items["Content"].Instance, 38)
+            MakeText(ServerCard.Instance, "Players in server", UDim2New(0.5, -10, 0, 18), UDim2New(0, 10, 0.5, -9), 14, 0, false)
+            local PlayersValue = MakeText(ServerCard.Instance, "", UDim2New(0.5, -10, 0, 18), UDim2New(0.5, 0, 0.5, -9), 14, 0.4, true)
+            PlayersValue.Instance.TextXAlignment = Enum.TextXAlignment.Right
+
+            local function UpdatePlayers()
+                if not PlayersValue.Instance.Parent then return end
+                PlayersValue.Instance.Text = #Players:GetPlayers() .. " / " .. Players.MaxPlayers
+            end
+            UpdatePlayers()
+            Library:Connect(Players.PlayerAdded, UpdatePlayers)
+            Library:Connect(Players.PlayerRemoving, function()
+                task.delay(0.2, UpdatePlayers)
+            end)
+
+            local function Notify(Content)
+                Library:MakeNotification({ Name = "Server", Content = Content, Time = 4 })
+            end
+
+            local function FetchJson(Url)
+                local Success, Body = pcall(function() return game:HttpGet(Url) end)
+                if not Success and RequestFunction then
+                    local RequestSuccess, Response = pcall(RequestFunction, { Url = Url, Method = "GET" })
+                    if RequestSuccess and Response and Response.Body then
+                        Body = Response.Body
+                        Success = true
+                    end
+                end
+                if not Success then return nil end
+                local DecodeSuccess, Decoded = pcall(function() return HttpService:JSONDecode(Body) end)
+                return DecodeSuccess and Decoded or nil
+            end
+
+            function HomeManager:Rejoin()
+                Notify("Rejoining server...")
+                task.spawn(function()
+                    local Success = pcall(function()
+                        if #Players:GetPlayers() <= 1 then
+                            LocalPlayer:Kick("\nRejoining...")
+                            task.wait()
+                            TeleportService:Teleport(game.PlaceId, LocalPlayer)
+                        else
+                            TeleportService:TeleportToPlaceInstance(game.PlaceId, game.JobId, LocalPlayer)
+                        end
+                    end)
+                    if not Success then Notify("Could not rejoin the server.") end
+                end)
+            end
+
+            function HomeManager:ServerHop()
+                Notify("Searching for a new server...")
+                task.spawn(function()
+                    local Result = FetchJson("https://games.roblox.com/v1/games/" .. tostring(game.PlaceId) .. "/servers/Public?sortOrder=Asc&limit=100&excludeFullGames=true")
+                    local Candidates = {}
+                    if type(Result) == "table" and type(Result.data) == "table" then
+                        for _, Server in Result.data do
+                            if Server.id ~= game.JobId and type(Server.playing) == "number" and type(Server.maxPlayers) == "number" and Server.playing < Server.maxPlayers then
+                                TableInsert(Candidates, Server)
+                            end
+                        end
+                    end
+                    if #Candidates == 0 then
+                        Notify("No other server found.")
+                        return
+                    end
+                    local Picked = Candidates[MathRandom(1, #Candidates)]
+                    local Success = pcall(function()
+                        TeleportService:TeleportToPlaceInstance(game.PlaceId, Picked.id, LocalPlayer)
+                    end)
+                    if not Success then Notify("Could not join the new server.") end
+                end)
+            end
+
+            ServerSection:AddButton({
+                Name = "Server Hop",
+                ToolTip = "Join a different public server of this game",
+                Callback = function() HomeManager:ServerHop() end
+            })
+
+            ServerSection:AddButton({
+                Name = "Rejoin Server",
+                ToolTip = "Rejoin the server you are currently in",
+                Callback = function() HomeManager:Rejoin() end
+            })
+
+            AccountSection:SetOpen(true)
+            GameSection:SetOpen(true)
+            ServerSection:SetOpen(true)
+
+            function HomeManager:AddChangelog(Entry)
+                if type(Entry) == "string" then Entry = { Changes = { Entry } } end
+                Entry = Entry or {}
+                self.ChangelogCount = self.ChangelogCount + 1
+
+                local Section = ChangelogSubTab:AddSection({
+                    Name = tostring(Entry.Version or Entry.Name or ("Update " .. self.ChangelogCount)),
+                    Description = Entry.Date and tostring(Entry.Date) or "",
+                    Side = 1
+                })
+                Section.Items["Section"].Instance.LayoutOrder = -self.ChangelogCount
+
+                local Changes = Entry.Changes or Entry.Logs or {}
+                if type(Changes) == "string" then Changes = { Changes } end
+                local Lines = {}
+                for _, Change in Changes do TableInsert(Lines, "• " .. tostring(Change)) end
+
+                if #Lines > 0 then
+                    Section:AddParagraph(tostring(Entry.Title or "Changes"), TableConcat(Lines, "\n"))
+                end
+
+                Section:SetOpen(Entry.Open ~= false)
+                TableInsert(self.Changelogs, Section)
+                return Section
+            end
+
+            for _, Entry in Data.Changelogs or {} do
+                HomeManager:AddChangelog(Entry)
+            end
+
+            return HomeManager
         end
 
         Library.Pages.Playerlist = function(self, Data)
