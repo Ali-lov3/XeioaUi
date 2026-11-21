@@ -2596,73 +2596,142 @@ local Library do
                 Active = true,
                 BorderSizePixel = 0,
                 Size = UDim2New(1, 0, 1, 0),
-                BackgroundColor3 = FromRGB(17, 16, 20)
+                BackgroundColor3 = FromRGB(0, 0, 0),
+                BackgroundTransparency = 0.35
             })
-            Items["Background"]:AddToTheme({ BackgroundColor3 = "Background" })
 
             Items["Content"] = Instances:Create("Frame", {
                 Parent = Items["Background"].Instance,
                 Name = "\0",
                 AnchorPoint = Vector2New(0.5, 0.5),
                 Position = UDim2New(0.5, 0, 0.5, 0),
-                Size = UDim2New(0, 280, 0, 0),
+                Size = UDim2New(0, 320, 0, 0),
                 AutomaticSize = Enum.AutomaticSize.Y,
-                BackgroundTransparency = 1,
-                BorderSizePixel = 0
+                BorderSizePixel = 0,
+                BackgroundColor3 = FromRGB(17, 16, 20)
+            })
+            Items["Content"]:AddToTheme({ BackgroundColor3 = "Background" })
+
+            Instances:Create("UICorner", {
+                Parent = Items["Content"].Instance,
+                Name = "\0",
+                CornerRadius = UDimNew(0, 6)
+            })
+
+            Items["ContentStroke"] = Instances:Create("UIStroke", {
+                Parent = Items["Content"].Instance,
+                Name = "\0",
+                Thickness = 1,
+                Color = FromRGB(36, 33, 42),
+                ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+            })
+            Items["ContentStroke"]:AddToTheme({ Color = "Border" })
+
+            Instances:Create("UIPadding", {
+                Parent = Items["Content"].Instance,
+                Name = "\0",
+                PaddingTop = UDimNew(0, 14),
+                PaddingBottom = UDimNew(0, 16),
+                PaddingLeft = UDimNew(0, 14),
+                PaddingRight = UDimNew(0, 14)
             })
 
             Instances:Create("UIListLayout", {
                 Parent = Items["Content"].Instance,
                 Name = "\0",
-                Padding = UDimNew(0, 10),
-                SortOrder = Enum.SortOrder.LayoutOrder,
-                HorizontalAlignment = Enum.HorizontalAlignment.Center
+                Padding = UDimNew(0, 12),
+                SortOrder = Enum.SortOrder.LayoutOrder
             })
 
-            Items["Logo"] = Instances:Create("ImageLabel", {
+            Items["Header"] = Instances:Create("Frame", {
                 Parent = Items["Content"].Instance,
                 Name = "\0",
                 LayoutOrder = 1,
                 BackgroundTransparency = 1,
                 BorderSizePixel = 0,
+                Size = UDim2New(1, 0, 0, 30)
+            })
+
+            Instances:Create("UIListLayout", {
+                Parent = Items["Header"].Instance,
+                Name = "\0",
+                Padding = UDimNew(0, 10),
+                FillDirection = Enum.FillDirection.Horizontal,
+                SortOrder = Enum.SortOrder.LayoutOrder,
+                VerticalAlignment = Enum.VerticalAlignment.Center
+            })
+
+            Items["Logo"] = Instances:Create("ImageLabel", {
+                Parent = Items["Header"].Instance,
+                Name = "\0",
+                LayoutOrder = 1,
+                BackgroundTransparency = 1,
+                BorderSizePixel = 0,
                 ScaleType = Enum.ScaleType.Fit,
-                Size = UDim2New(0, 72, 0, 72)
+                Size = UDim2New(0, 30, 0, 30)
             })
             Library.ApplyIcon(Items["Logo"].Instance, LoadingScreen.Logo)
 
             Items["Title"] = Instances:Create("TextLabel", {
-                Parent = Items["Content"].Instance,
+                Parent = Items["Header"].Instance,
                 Name = "\0",
                 LayoutOrder = 2,
                 FontFace = Library.Font,
                 TextColor3 = FromRGB(255, 255, 255),
                 Text = LoadingScreen.Title,
-                TextSize = 24,
-                Size = UDim2New(1, 0, 0, 28),
+                TextSize = 22,
+                TextXAlignment = Enum.TextXAlignment.Left,
+                Size = UDim2New(1, -40, 0, 25),
                 BackgroundTransparency = 1,
                 BorderSizePixel = 0
             })
             Items["Title"]:AddToTheme({ TextColor3 = "Text" })
 
-            Items["Status"] = Instances:Create("TextLabel", {
+            Items["StatusRow"] = Instances:Create("Frame", {
                 Parent = Items["Content"].Instance,
                 Name = "\0",
-                LayoutOrder = 3,
+                LayoutOrder = 2,
+                BackgroundTransparency = 1,
+                BorderSizePixel = 0,
+                Size = UDim2New(1, 0, 0, 16)
+            })
+
+            Items["Status"] = Instances:Create("TextLabel", {
+                Parent = Items["StatusRow"].Instance,
+                Name = "\0",
                 FontFace = Library.Font,
                 TextColor3 = FromRGB(255, 255, 255),
                 TextTransparency = 0.4,
                 Text = LoadingScreen.Text,
                 TextSize = 14,
-                Size = UDim2New(1, 0, 0, 16),
+                TextXAlignment = Enum.TextXAlignment.Left,
+                Size = UDim2New(1, -44, 1, 0),
                 BackgroundTransparency = 1,
                 BorderSizePixel = 0
             })
             Items["Status"]:AddToTheme({ TextColor3 = "Text" })
 
+            Items["Percent"] = Instances:Create("TextLabel", {
+                Parent = Items["StatusRow"].Instance,
+                Name = "\0",
+                FontFace = Library.Subfont,
+                TextColor3 = FromRGB(255, 255, 255),
+                TextTransparency = 0.4,
+                Text = "0%",
+                TextSize = 13,
+                TextXAlignment = Enum.TextXAlignment.Right,
+                AnchorPoint = Vector2New(1, 0),
+                Position = UDim2New(1, 0, 0, 0),
+                Size = UDim2New(0, 40, 1, 0),
+                BackgroundTransparency = 1,
+                BorderSizePixel = 0
+            })
+            Items["Percent"]:AddToTheme({ TextColor3 = "Text" })
+
             Items["Track"] = Instances:Create("Frame", {
                 Parent = Items["Content"].Instance,
                 Name = "\0",
-                LayoutOrder = 4,
+                LayoutOrder = 3,
                 ClipsDescendants = true,
                 BorderSizePixel = 0,
                 Size = UDim2New(1, 0, 0, 6),
@@ -2694,23 +2763,8 @@ local Library do
                 Parent = Items["Fill"].Instance,
                 Name = "\0",
                 Rotation = 0,
-                Color = RGBSequence{ RGBSequenceKeypoint(0, Library.Theme.Accent), RGBSequenceKeypoint(1, FromRGB(0, 0, 0)) }
-            }):AddToTheme({ Color = function() return RGBSequence{ RGBSequenceKeypoint(0, Library.Theme.Accent), RGBSequenceKeypoint(1, FromRGB(0, 0, 0)) } end })
-
-            Items["Percent"] = Instances:Create("TextLabel", {
-                Parent = Items["Content"].Instance,
-                Name = "\0",
-                LayoutOrder = 5,
-                FontFace = Library.Subfont,
-                TextColor3 = FromRGB(255, 255, 255),
-                TextTransparency = 0.5,
-                Text = "0%",
-                TextSize = 12,
-                Size = UDim2New(1, 0, 0, 14),
-                BackgroundTransparency = 1,
-                BorderSizePixel = 0
-            })
-            Items["Percent"]:AddToTheme({ TextColor3 = "Text" })
+                Color = RGBSequence{ RGBSequenceKeypoint(0, Library.Theme.Accent), RGBSequenceKeypoint(1, Library.Theme.Accent) }
+            }):AddToTheme({ Color = function() return RGBSequence{ RGBSequenceKeypoint(0, Library.Theme.Accent), RGBSequenceKeypoint(1, Library.Theme.Accent) } end })
         end
 
         local FadeList = { Items["Background"].Instance }
@@ -2840,10 +2894,10 @@ local Library do
                 Parent = Items["Gui"].Instance,
                 Name = "\0",
                 Position = Data.Position or UDim2New(0, 12, 0, 12),
-                Size = UDim2New(0, 0, 0, 30),
+                Size = UDim2New(0, 0, 0, 34),
                 AutomaticSize = Enum.AutomaticSize.X,
                 ClipsDescendants = true,
-                BackgroundTransparency = 0.1,
+                BackgroundTransparency = 0,
                 BorderSizePixel = 0,
                 Visible = Watermark.Visible,
                 BackgroundColor3 = FromRGB(17, 16, 20)
@@ -2885,8 +2939,8 @@ local Library do
             Instances:Create("UIPadding", {
                 Parent = Items["Row"].Instance,
                 Name = "\0",
-                PaddingLeft = UDimNew(0, 8),
-                PaddingRight = UDimNew(0, 10)
+                PaddingLeft = UDimNew(0, 10),
+                PaddingRight = UDimNew(0, 12)
             })
 
             Items["Logo"] = Instances:Create("ImageLabel", {
@@ -2896,7 +2950,7 @@ local Library do
                 BackgroundTransparency = 1,
                 BorderSizePixel = 0,
                 ScaleType = Enum.ScaleType.Fit,
-                Size = UDim2New(0, 18, 0, 18)
+                Size = UDim2New(0, 22, 0, 22)
             })
             Library.ApplyIcon(Items["Logo"].Instance, Watermark.Logo)
 
@@ -2907,22 +2961,32 @@ local Library do
                 FontFace = Library.Font,
                 TextColor3 = FromRGB(255, 255, 255),
                 Text = Watermark.Title,
-                TextSize = 14,
+                TextSize = 16,
                 TextXAlignment = Enum.TextXAlignment.Left,
-                Size = UDim2New(0, 0, 0, 16),
+                Size = UDim2New(0, 0, 0, 18),
                 AutomaticSize = Enum.AutomaticSize.X,
                 BackgroundTransparency = 1,
                 BorderSizePixel = 0
             })
             Items["Title"]:AddToTheme({ TextColor3 = "Text" })
 
-            Items["Info"] = Instances:Create("TextLabel", {
+            Items["Divider"] = Instances:Create("Frame", {
                 Parent = Items["Row"].Instance,
                 Name = "\0",
                 LayoutOrder = 3,
+                BorderSizePixel = 0,
+                Size = UDim2New(0, 1, 0, 16),
+                BackgroundColor3 = FromRGB(41, 40, 49)
+            })
+            Items["Divider"]:AddToTheme({ BackgroundColor3 = "Element" })
+
+            Items["Info"] = Instances:Create("TextLabel", {
+                Parent = Items["Row"].Instance,
+                Name = "\0",
+                LayoutOrder = 4,
                 FontFace = Library.Subfont,
                 TextColor3 = FromRGB(255, 255, 255),
-                TextTransparency = 0.3,
+                TextTransparency = 0.4,
                 RichText = true,
                 Text = "",
                 TextSize = 13,
@@ -2933,23 +2997,6 @@ local Library do
                 BorderSizePixel = 0
             })
             Items["Info"]:AddToTheme({ TextColor3 = "Text" })
-
-            Items["Line"] = Instances:Create("Frame", {
-                Parent = Items["Frame"].Instance,
-                Name = "\0",
-                AnchorPoint = Vector2New(0, 1),
-                Position = UDim2New(0, 0, 1, 0),
-                Size = UDim2New(1, 0, 0, 2),
-                BorderSizePixel = 0,
-                BackgroundColor3 = FromRGB(255, 255, 255)
-            })
-
-            Instances:Create("UIGradient", {
-                Parent = Items["Line"].Instance,
-                Name = "\0",
-                Rotation = 0,
-                Color = RGBSequence{ RGBSequenceKeypoint(0, Library.Theme.Accent), RGBSequenceKeypoint(1, FromRGB(0, 0, 0)) }
-            }):AddToTheme({ Color = function() return RGBSequence{ RGBSequenceKeypoint(0, Library.Theme.Accent), RGBSequenceKeypoint(1, FromRGB(0, 0, 0)) } end })
         end
 
         function Watermark:Refresh()
@@ -2960,6 +3007,7 @@ local Library do
             if self.ShowPing then TableInsert(Parts, "Ping " .. self.Ping .. " ms") end
             Items["Info"].Instance.Text = TableConcat(Parts, '  <font transparency="0.6">|</font>  ')
             Items["Info"].Instance.Visible = #Parts > 0
+            Items["Divider"].Instance.Visible = #Parts > 0
             Items["Title"].Instance.Text = self.Title
         end
 
@@ -5988,9 +6036,9 @@ local Library do
                     Parent = Items["Highlight"].Instance,
                     Name = "\0",
                     Rotation = 0,
-                    Color = RGBSequence{ RGBSequenceKeypoint(0, Library.Theme.Accent), RGBSequenceKeypoint(1, FromRGB(0, 0, 0)) },
-                    Transparency = NumSequence{ NumSequenceKeypoint(0, 0.55), NumSequenceKeypoint(0.45, 0.8), NumSequenceKeypoint(1, 1) }
-                }):AddToTheme({ Color = function() return RGBSequence{ RGBSequenceKeypoint(0, Library.Theme.Accent), RGBSequenceKeypoint(1, FromRGB(0, 0, 0)) } end })
+                    Color = RGBSequence{ RGBSequenceKeypoint(0, Library.Theme.Accent), RGBSequenceKeypoint(1, Library.Theme.Accent) },
+                    Transparency = NumSequence{ NumSequenceKeypoint(0, 0.3), NumSequenceKeypoint(1, 1) }
+                }):AddToTheme({ Color = function() return RGBSequence{ RGBSequenceKeypoint(0, Library.Theme.Accent), RGBSequenceKeypoint(1, Library.Theme.Accent) } end })
 
                 Items["Line"] = Instances:Create("Frame", {
                     Parent = Items["Inactive"].Instance,
