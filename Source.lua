@@ -3927,6 +3927,7 @@ local Library do
     Library.AttachExpressButton = function(self, Window)
         if self._ExpressWidgets and self._ExpressWidgets.MainGui and self._ExpressWidgets.MainGui.Instance and self._ExpressWidgets.MainGui.Instance.Parent then
             self._ExpressWidgets.Window = Window
+            if self._ExpressWidgets.ApplyLogo then self._ExpressWidgets.ApplyLogo() end
             return
         end
 
@@ -4044,9 +4045,17 @@ local Library do
 
         Widgets.MainFrame:MakeDraggable()
 
+        Widgets.ApplyLogo = function()
+            if not Widgets.ImageLabel or not Widgets.ImageLabel.Instance then return end
+            local Logo = Widgets.Window and Widgets.Window.Logo
+            if Logo == nil or tostring(Logo) == "" then Logo = "77434646025119" end
+            Logo = tostring(Logo)
+            Widgets.ImageLabel.Instance.Image = Logo:match("^%d+$") and ("rbxassetid://" .. Logo) or Logo
+        end
+
         task.defer(function()
             if self._ExpressWidgets ~= Widgets then return end
-            Widgets.ImageLabel.Instance.Image = "rbxassetid://118529184603611"
+            Widgets.ApplyLogo()
         end)
 
         task.spawn(function()
@@ -5438,6 +5447,45 @@ local Library do
                     BackgroundColor3 = FromRGB(255, 255, 255)
                 })
 
+                Items["Highlight"] = Instances:Create("Frame", {
+                    Parent = Items["Inactive"].Instance,
+                    Name = "\0",
+                    BackgroundColor3 = FromRGB(255, 255, 255),
+                    BackgroundTransparency = 1,
+                    BorderSizePixel = 0,
+                    Size = UDim2New(1, 0, 1, 0)
+                })
+
+                Instances:Create("UICorner", {
+                    Parent = Items["Highlight"].Instance,
+                    Name = "\0",
+                    CornerRadius = UDimNew(0, 6)
+                })
+
+                Instances:Create("UIGradient", {
+                    Parent = Items["Highlight"].Instance,
+                    Name = "\0",
+                    Rotation = 0,
+                    Color = RGBSequence{ RGBSequenceKeypoint(0, Library.Theme.Accent), RGBSequenceKeypoint(1, FromRGB(0, 0, 0)) }
+                }):AddToTheme({ Color = function() return RGBSequence{ RGBSequenceKeypoint(0, Library.Theme.Accent), RGBSequenceKeypoint(1, FromRGB(0, 0, 0)) } end })
+
+                Items["Line"] = Instances:Create("Frame", {
+                    Parent = Items["Inactive"].Instance,
+                    Name = "\0",
+                    AnchorPoint = Vector2New(0, 0.5),
+                    Position = UDim2New(0, 0, 0.5, 0),
+                    Size = UDim2New(0, 3, 0, 0),
+                    BorderSizePixel = 0,
+                    BackgroundColor3 = Library.Theme.Accent
+                })
+                Items["Line"]:AddToTheme({ BackgroundColor3 = "Accent" })
+
+                Instances:Create("UICorner", {
+                    Parent = Items["Line"].Instance,
+                    Name = "\0",
+                    CornerRadius = UDimNew(1, 0)
+                })
+
                 Items["Text"] = Instances:Create("TextLabel", {
                     Parent = Items["Inactive"].Instance,
                     Name = "\0",
@@ -5541,6 +5589,8 @@ local Library do
 
                 if Page.Active then
                     Items["Text"]:Tween(nil, { TextTransparency = 0 })
+                    Items["Highlight"]:Tween(nil, { BackgroundTransparency = 0.35 })
+                    Items["Line"]:Tween(nil, { Size = UDim2New(0, 3, 0, 18) })
                     if Page.Icon then
                         Items["Icon"]:ChangeItemTheme({ ImageColor3 = "Accent" })
                         Items["Icon"]:Tween(nil, { ImageColor3 = Library.Theme.Accent, ImageTransparency = 0 })
@@ -5549,6 +5599,8 @@ local Library do
                     for Index, Value in Library.OpenFrames do Value:SetOpen(false) end
                 else
                     Items["Text"]:Tween(nil, { TextTransparency = 0.4 })
+                    Items["Highlight"]:Tween(nil, { BackgroundTransparency = 1 })
+                    Items["Line"]:Tween(nil, { Size = UDim2New(0, 3, 0, 0) })
                     if Page.Icon then
                         Items["Icon"]:ChangeItemTheme({ ImageColor3 = "Text" })
                         Items["Icon"]:Tween(nil, { ImageColor3 = Library.Theme.Text, ImageTransparency = 0.4 })
