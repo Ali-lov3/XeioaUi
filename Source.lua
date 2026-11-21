@@ -3040,18 +3040,56 @@ local Library do
 
         function Watermark:SetVisible(Bool)
             self.Visible = Bool == true
-            Items["Frame"].Instance.Visible = self.Visible
+            if self.UpdateDock then
+                self.UpdateDock()
+            else
+                Items["Frame"].Instance.Visible = self.Visible
+            end
+        end
+
+        local DockConnections = {}
+
+        local function DisconnectDock()
+            for _, Connection in DockConnections do Connection:Disconnect() end
+            DockConnections = {}
+        end
+
+        function Watermark:Dock()
+            if self.Destroyed then return end
+            local WindowItem = Library.WindowItem
+            local MainFrameItem = WindowItem and WindowItem.Items and WindowItem.Items["MainFrame"]
+            local MainFrame = MainFrameItem and MainFrameItem.Instance
+            if not MainFrame then return end
+
+            DisconnectDock()
+            local Frame = Items["Frame"].Instance
+            Frame.AnchorPoint = Vector2New(1, 1)
+
+            local function Update()
+                local TargetX = MainFrame.AbsolutePosition.X + MainFrame.AbsoluteSize.X - 4
+                local TargetY = MainFrame.AbsolutePosition.Y - 3
+                Frame.Position = UDim2New(0, TargetX, 0, TargetY)
+                Frame.Visible = Watermark.Visible and MainFrame.Visible and TargetY >= 34
+            end
+
+            self.UpdateDock = Update
+            self.Docked = true
+            TableInsert(DockConnections, MainFrame:GetPropertyChangedSignal("AbsolutePosition"):Connect(Update))
+            TableInsert(DockConnections, MainFrame:GetPropertyChangedSignal("AbsoluteSize"):Connect(Update))
+            TableInsert(DockConnections, MainFrame:GetPropertyChangedSignal("Visible"):Connect(Update))
+            Update()
         end
 
         function Watermark:Destroy()
             if self.Destroyed then return end
             self.Destroyed = true
             if Library and Library.ActiveWatermark == self then Library.ActiveWatermark = nil end
+            DisconnectDock()
             Items["Gui"]:Clean()
         end
 
-        Items["Frame"]:MakeDraggable()
         Watermark:Refresh()
+        Watermark:Dock()
 
         Library:Thread(function()
             while not Watermark.Destroyed and Items["Frame"].Instance.Parent do
@@ -5254,7 +5292,8 @@ local Library do
                 local Viewport = Camera.ViewportSize
                 local Width = MathClamp(MathFloor(Viewport.X * 0.7), math.min(480, Viewport.X - 20), 730)
                 local Height = MathClamp(MathFloor(Viewport.Y * 0.9), math.min(300, Viewport.Y - 20), 530)
-                return Width, Height, MathFloor((Viewport.X - Width) / 2), MathFloor((Viewport.Y - Height) / 2)
+                Height = math.min(Height, Viewport.Y - 46)
+                return Width, Height, MathFloor((Viewport.X - Width) / 2), math.max(MathFloor((Viewport.Y - Height) / 2), 40)
             end
 
             local AutoWidth, AutoHeight, AutoX, AutoY = GetAutoWindowMetrics()
@@ -5663,9 +5702,9 @@ local Library do
                     Parent = Items["Side"].Instance,
                     Name = "\0",
                     BackgroundTransparency = 1,
-                    Position = UDim2New(0, 6, 0, 6),
+                    Position = UDim2New(0, 6, 0, 40),
                     BorderColor3 = FromRGB(0, 0, 0),
-                    Size = UDim2New(1, -12, 1, -58),
+                    Size = UDim2New(1, -12, 1, -92),
                     CanvasSize = UDim2New(0, 0, 0, 0),
                     AutomaticCanvasSize = Enum.AutomaticSize.Y,
                     MidImage = "rbxassetid://136419474381965",
@@ -5690,6 +5729,402 @@ local Library do
                     Name = "\0",
                     PaddingBottom = UDimNew(0, 4)
                 })
+
+                Items["GlobalSearch"] = Instances:Create("Frame", {
+                    Parent = Items["Side"].Instance,
+                    Name = "\0",
+                    Position = UDim2New(0, 6, 0, 6),
+                    Size = UDim2New(1, -12, 0, 28),
+                    BorderColor3 = FromRGB(0, 0, 0),
+                    BorderSizePixel = 0,
+                    BackgroundColor3 = FromRGB(26, 25, 31)
+                })
+                Items["GlobalSearch"]:AddToTheme({ BackgroundColor3 = "Inline" })
+
+                Instances:Create("UICorner", {
+                    Parent = Items["GlobalSearch"].Instance,
+                    Name = "\0",
+                    CornerRadius = UDimNew(0, 6)
+                })
+
+                Items["GlobalSearchStroke"] = Instances:Create("UIStroke", {
+                    Parent = Items["GlobalSearch"].Instance,
+                    Name = "\0",
+                    Color = FromRGB(36, 33, 42),
+                    ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+                })
+                Items["GlobalSearchStroke"]:AddToTheme({ Color = "Border" })
+
+                Items["GlobalSearchIcon"] = Instances:Create("ImageLabel", {
+                    Parent = Items["GlobalSearch"].Instance,
+                    Name = "\0",
+                    ImageTransparency = 0.4,
+                    BorderColor3 = FromRGB(0, 0, 0),
+                    Size = UDim2New(0, 12, 0, 12),
+                    AnchorPoint = Vector2New(0, 0.5),
+                    Image = "rbxassetid://106690619909970",
+                    BackgroundTransparency = 1,
+                    Position = UDim2New(0, 8, 0.5, 0),
+                    BorderSizePixel = 0
+                })
+                Items["GlobalSearchIcon"]:AddToTheme({ ImageColor3 = "Text" })
+
+                Items["GlobalInput"] = Instances:Create("TextBox", {
+                    Parent = Items["GlobalSearch"].Instance,
+                    Name = "\0",
+                    FontFace = Library.Font,
+                    AnchorPoint = Vector2New(0, 0.5),
+                    PlaceholderColor3 = FromRGB(185, 185, 185),
+                    PlaceholderText = "Search...",
+                    TextSize = 12,
+                    Size = UDim2New(1, -32, 0, 14),
+                    ClipsDescendants = true,
+                    BorderColor3 = FromRGB(0, 0, 0),
+                    Text = "",
+                    Position = UDim2New(0, 26, 0.5, 0),
+                    BackgroundTransparency = 1,
+                    TextXAlignment = Enum.TextXAlignment.Left,
+                    TextColor3 = FromRGB(255, 255, 255),
+                    ClearTextOnFocus = false,
+                    BorderSizePixel = 0
+                })
+                Items["GlobalInput"]:AddToTheme({ TextColor3 = "Text" })
+
+                Items["GlobalResults"] = Instances:Create("ScrollingFrame", {
+                    Parent = Items["MainFrame"].Instance,
+                    Name = "\0",
+                    Visible = false,
+                    Position = UDim2New(0, 6, 0, 83),
+                    Size = UDim2New(0, 250, 0, 100),
+                    BorderColor3 = FromRGB(0, 0, 0),
+                    BorderSizePixel = 0,
+                    ClipsDescendants = true,
+                    ZIndex = 200,
+                    CanvasSize = UDim2New(0, 0, 0, 0),
+                    AutomaticCanvasSize = Enum.AutomaticSize.Y,
+                    MidImage = "rbxassetid://136419474381965",
+                    TopImage = "rbxassetid://136419474381965",
+                    BottomImage = "rbxassetid://136419474381965",
+                    ScrollBarImageColor3 = Library.Theme.Accent,
+                    ScrollBarThickness = 3,
+                    BackgroundColor3 = FromRGB(17, 16, 20)
+                })
+                Items["GlobalResults"]:AddToTheme({ BackgroundColor3 = "Background", ScrollBarImageColor3 = "Accent" })
+
+                Instances:Create("UICorner", {
+                    Parent = Items["GlobalResults"].Instance,
+                    Name = "\0",
+                    CornerRadius = UDimNew(0, 6)
+                })
+
+                Instances:Create("UIStroke", {
+                    Parent = Items["GlobalResults"].Instance,
+                    Name = "\0",
+                    Color = FromRGB(36, 33, 42),
+                    ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+                }):AddToTheme({ Color = "Border" })
+
+                Instances:Create("UIListLayout", {
+                    Parent = Items["GlobalResults"].Instance,
+                    Name = "\0",
+                    Padding = UDimNew(0, 2),
+                    SortOrder = Enum.SortOrder.LayoutOrder
+                })
+
+                Instances:Create("UIPadding", {
+                    Parent = Items["GlobalResults"].Instance,
+                    Name = "\0",
+                    PaddingTop = UDimNew(0, 4),
+                    PaddingBottom = UDimNew(0, 4),
+                    PaddingLeft = UDimNew(0, 4),
+                    PaddingRight = UDimNew(0, 4)
+                })
+
+                local GlobalInput = Items["GlobalInput"].Instance
+                local GlobalPanel = Items["GlobalResults"].Instance
+                local GlobalRows = {}
+                local GlobalCurrent = {}
+                local GlobalRecent = {}
+
+                local function GlobalClearRows()
+                    for _, Row in GlobalRows do Row:Clean() end
+                    GlobalRows = {}
+                end
+
+                local function GlobalClose()
+                    GlobalClearRows()
+                    GlobalCurrent = {}
+                    GlobalPanel.Visible = false
+                end
+
+                local function GlobalCollect()
+                    local List = {}
+                    for _, Tab in Window.Pages do
+                        for _, SubTab in Tab.SubPages or {} do
+                            local Data = Library.SearchItems[SubTab]
+                            if Data then
+                                for _, Entry in Data do
+                                    if Entry.Type and tostring(Entry.Name or "") ~= "" then
+                                        TableInsert(List, { Entry = Entry, Tab = Tab, SubTab = SubTab })
+                                    end
+                                end
+                            end
+                        end
+                    end
+                    return List
+                end
+
+                local function GlobalScore(Item, Query)
+                    local Name = StringLower(tostring(Item.Entry.Name))
+                    local Length = #Query
+                    if Name == Query then return 100 end
+                    if StringSub(Name, 1, Length) == Query then return 80 end
+                    for Word in string.gmatch(Name, "%S+") do
+                        if StringSub(Word, 1, Length) == Query then return 60 end
+                    end
+                    if StringSub(StringLower(Item.Entry.Type), 1, Length) == Query then return 50 end
+                    if StringFind(Name, Query, 1, true) then return 40 end
+                    local SectionName = Item.Entry.Section and Item.Entry.Section.Name or ""
+                    local Path = StringLower(tostring(Item.Tab.Name) .. " " .. tostring(Item.SubTab.Name) .. " " .. tostring(SectionName))
+                    if StringFind(Path, Query, 1, true) then return 20 end
+                    if Length < 3 then return 0 end
+                    local Cursor = 1
+                    for Index = 1, Length do
+                        local Found = StringFind(Name, StringSub(Query, Index, Index), Cursor, true)
+                        if not Found then return 0 end
+                        Cursor = Found + 1
+                    end
+                    return 10
+                end
+
+                local function GlobalFlash(Gui)
+                    local Stroke = InstanceNew("UIStroke")
+                    Stroke.Color = Library.Theme.Accent
+                    Stroke.Thickness = 1.5
+                    Stroke.Transparency = 0
+                    Stroke.Parent = Gui
+                    TweenService:Create(Stroke, TweenInfo.new(1.4, Enum.EasingStyle.Quad, Enum.EasingDirection.In), { Transparency = 1 }):Play()
+                    task.delay(1.5, function() Stroke:Destroy() end)
+                end
+
+                local function GlobalScrollTo(Gui)
+                    local Parent = Gui.Parent
+                    while Parent and not Parent:IsA("ScrollingFrame") do Parent = Parent.Parent end
+                    if Parent then
+                        local Target = Gui.AbsolutePosition.Y - Parent.AbsolutePosition.Y + Parent.CanvasPosition.Y - 24
+                        Parent.CanvasPosition = Vector2New(Parent.CanvasPosition.X, math.max(0, Target))
+                    end
+                end
+
+                local function GlobalGoto(Item)
+                    local Entry = Item.Entry
+                    for Index = #GlobalRecent, 1, -1 do
+                        if GlobalRecent[Index] == Entry then TableRemove(GlobalRecent, Index) end
+                    end
+                    TableInsert(GlobalRecent, 1, Entry)
+                    if #GlobalRecent > 4 then TableRemove(GlobalRecent) end
+
+                    GlobalInput.Text = ""
+                    GlobalInput:ReleaseFocus()
+                    GlobalClose()
+
+                    local Tab, SubTab = Item.Tab, Item.SubTab
+                    if SubTab.Items and SubTab.Items["Input"] then SubTab.Items["Input"].Instance.Text = "" end
+                    for _, Value in Window.Pages do Value:Turn(Value == Tab) end
+                    for _, Value in Tab.SubPages do Value:Turn(Value == SubTab) end
+
+                    local Section = Entry.Section
+                    if Section and Section.SetOpen and not Section.IsOpen then Section:SetOpen(true) end
+
+                    task.delay(0.3, function()
+                        local Gui = Entry.Item and Entry.Item.Instance
+                        if not Gui or not Gui.Parent then return end
+                        GlobalScrollTo(Gui)
+                        GlobalFlash(Gui)
+                    end)
+                end
+
+                local function GlobalAddHeader(Text, Order)
+                    local Header = Instances:Create("TextLabel", {
+                        Parent = GlobalPanel,
+                        Name = "\0",
+                        FontFace = Library.Font,
+                        Text = Text,
+                        TextSize = 11,
+                        TextColor3 = FromRGB(255, 255, 255),
+                        TextTransparency = 0.5,
+                        TextXAlignment = Enum.TextXAlignment.Left,
+                        BackgroundTransparency = 1,
+                        BorderSizePixel = 0,
+                        Size = UDim2New(1, 0, 0, 16),
+                        LayoutOrder = Order,
+                        ZIndex = 201
+                    })
+                    Header:AddToTheme({ TextColor3 = "Text" })
+                    Instances:Create("UIPadding", { Parent = Header.Instance, Name = "\0", PaddingLeft = UDimNew(0, 4) })
+                    TableInsert(GlobalRows, Header)
+                end
+
+                local function GlobalAddRow(Item, Order)
+                    local Row = Instances:Create("TextButton", {
+                        Parent = GlobalPanel,
+                        Name = "\0",
+                        Text = "",
+                        AutoButtonColor = false,
+                        BackgroundColor3 = FromRGB(26, 25, 31),
+                        BackgroundTransparency = 1,
+                        BorderSizePixel = 0,
+                        Size = UDim2New(1, 0, 0, 34),
+                        LayoutOrder = Order,
+                        ZIndex = 201
+                    })
+                    Row:AddToTheme({ BackgroundColor3 = "Inline" })
+                    Instances:Create("UICorner", { Parent = Row.Instance, Name = "\0", CornerRadius = UDimNew(0, 5) })
+
+                    local NameLabel = Instances:Create("TextLabel", {
+                        Parent = Row.Instance,
+                        Name = "\0",
+                        FontFace = Library.Font,
+                        Text = tostring(Item.Entry.Name),
+                        TextSize = 13,
+                        TextColor3 = FromRGB(255, 255, 255),
+                        TextXAlignment = Enum.TextXAlignment.Left,
+                        TextTruncate = Enum.TextTruncate.AtEnd,
+                        BackgroundTransparency = 1,
+                        BorderSizePixel = 0,
+                        Position = UDim2New(0, 8, 0, 4),
+                        Size = UDim2New(1, -72, 0, 15),
+                        ZIndex = 202
+                    })
+                    NameLabel:AddToTheme({ TextColor3 = "Text" })
+
+                    local SectionName = Item.Entry.Section and Item.Entry.Section.Name
+                    local PathText = tostring(Item.Tab.Name) .. " > " .. tostring(Item.SubTab.Name)
+                    if SectionName then PathText = PathText .. " > " .. tostring(SectionName) end
+
+                    local PathLabel = Instances:Create("TextLabel", {
+                        Parent = Row.Instance,
+                        Name = "\0",
+                        FontFace = Library.Font,
+                        Text = PathText,
+                        TextSize = 10,
+                        TextColor3 = FromRGB(255, 255, 255),
+                        TextTransparency = 0.5,
+                        TextXAlignment = Enum.TextXAlignment.Left,
+                        TextTruncate = Enum.TextTruncate.AtEnd,
+                        BackgroundTransparency = 1,
+                        BorderSizePixel = 0,
+                        Position = UDim2New(0, 8, 0, 19),
+                        Size = UDim2New(1, -16, 0, 11),
+                        ZIndex = 202
+                    })
+                    PathLabel:AddToTheme({ TextColor3 = "Text" })
+
+                    local TypeLabel = Instances:Create("TextLabel", {
+                        Parent = Row.Instance,
+                        Name = "\0",
+                        FontFace = Library.Font,
+                        Text = Item.Entry.Type,
+                        TextSize = 10,
+                        TextColor3 = Library.Theme.Accent,
+                        TextXAlignment = Enum.TextXAlignment.Right,
+                        BackgroundTransparency = 1,
+                        BorderSizePixel = 0,
+                        AnchorPoint = Vector2New(1, 0),
+                        Position = UDim2New(1, -8, 0, 5),
+                        Size = UDim2New(0, 60, 0, 13),
+                        ZIndex = 202
+                    })
+                    TypeLabel:AddToTheme({ TextColor3 = "Accent" })
+
+                    Row.Instance.MouseEnter:Connect(function() Row:Tween(nil, { BackgroundTransparency = 0 }) end)
+                    Row.Instance.MouseLeave:Connect(function() Row:Tween(nil, { BackgroundTransparency = 1 }) end)
+                    Row.Instance.InputBegan:Connect(function(Input)
+                        if Input.UserInputType == Enum.UserInputType.MouseButton1 or Input.UserInputType == Enum.UserInputType.Touch then
+                            task.defer(GlobalGoto, Item)
+                        end
+                    end)
+
+                    TableInsert(GlobalRows, NameLabel)
+                    TableInsert(GlobalRows, PathLabel)
+                    TableInsert(GlobalRows, TypeLabel)
+                    TableInsert(GlobalRows, Row)
+                end
+
+                local function GlobalRefresh()
+                    GlobalClearRows()
+
+                    local Query = StringLower((string.gsub(GlobalInput.Text, "^%s*(.-)%s*$", "%1")))
+                    local All = GlobalCollect()
+                    local Results = {}
+                    local HeaderText
+
+                    if Query == "" then
+                        local Seen = {}
+                        for _, Entry in GlobalRecent do
+                            for _, Item in All do
+                                if Item.Entry == Entry then
+                                    TableInsert(Results, Item)
+                                    Seen[Entry] = true
+                                    break
+                                end
+                            end
+                        end
+                        HeaderText = #Results > 0 and "Recent" or "Suggested"
+                        for _, Item in All do
+                            if #Results >= 7 then break end
+                            if not Seen[Item.Entry] then TableInsert(Results, Item) end
+                        end
+                    else
+                        local Scored = {}
+                        for Index, Item in All do
+                            local Score = GlobalScore(Item, Query)
+                            if Score > 0 then TableInsert(Scored, { Item = Item, Score = Score, Index = Index }) end
+                        end
+                        table.sort(Scored, function(A, B)
+                            if A.Score ~= B.Score then return A.Score > B.Score end
+                            return A.Index < B.Index
+                        end)
+                        for Index = 1, math.min(#Scored, 20) do TableInsert(Results, Scored[Index].Item) end
+                        HeaderText = #Results > 0 and "Results" or "No results"
+                    end
+
+                    GlobalCurrent = Results
+                    GlobalAddHeader(HeaderText, 0)
+                    for Index, Item in Results do GlobalAddRow(Item, Index) end
+
+                    local Frame = Items["MainFrame"].Instance
+                    local Width = math.min(260, Frame.AbsoluteSize.X - 12)
+                    local Wanted = 8 + 16 + 2 + #Results * 36
+                    local MaxHeight = math.max(80, Frame.AbsoluteSize.Y - 83 - 8)
+                    GlobalPanel.Size = UDim2New(0, Width, 0, math.min(Wanted, MaxHeight))
+                    GlobalPanel.Visible = true
+                end
+
+                Library:Connect(GlobalInput:GetPropertyChangedSignal("Text"), function()
+                    if GlobalPanel.Visible then GlobalRefresh() end
+                end)
+
+                Library:Connect(GlobalInput.Focused, function()
+                    Items["GlobalSearchStroke"]:ChangeItemTheme({ Color = "Accent" })
+                    Items["GlobalSearchStroke"]:Tween(nil, { Color = Library.Theme.Accent })
+                    Items["GlobalSearchIcon"]:Tween(nil, { ImageTransparency = 0 })
+                    GlobalRefresh()
+                end)
+
+                Library:Connect(GlobalInput.FocusLost, function(EnterPressed)
+                    Items["GlobalSearchStroke"]:ChangeItemTheme({ Color = "Border" })
+                    Items["GlobalSearchStroke"]:Tween(nil, { Color = Library.Theme.Border })
+                    Items["GlobalSearchIcon"]:Tween(nil, { ImageTransparency = 0.4 })
+                    if EnterPressed and GlobalCurrent[1] then
+                        local First = GlobalCurrent[1]
+                        task.defer(GlobalGoto, First)
+                        return
+                    end
+                    task.delay(0.15, function()
+                        if not GlobalInput:IsFocused() then GlobalClose() end
+                    end)
+                end)
 
                 Items["Content"] = Instances:Create("Frame", {
                     Parent = Items["MainFrame"].Instance,
@@ -5786,6 +6221,10 @@ local Library do
             end
 
             Library.WindowItem = Window
+
+            if Library.ActiveWatermark and Library.ActiveWatermark.Dock then
+                Library.ActiveWatermark:Dock()
+            end
 
             local function SetClosePromptOpen(Bool)
                 Window.ClosePromptOpen = Bool
@@ -5977,7 +6416,7 @@ local Library do
                         Items["MainFrame"]:Tween(nil, { Position = UDim2New(0, 0, 0, 0) })
                     else
                         Items["MainFrame"]:Tween(nil, { Size = UDim2New(0, OldSize.X, 0, OldSize.Y) })
-                        Items["MainFrame"]:Tween(nil, { Position = UDim2New(0, MathFloor((Camera.ViewportSize.X - OldSize.X) / 2), 0, MathFloor((Camera.ViewportSize.Y - OldSize.Y) / 2)) })
+                        Items["MainFrame"]:Tween(nil, { Position = UDim2New(0, MathFloor((Camera.ViewportSize.X - OldSize.X) / 2), 0, math.max(MathFloor((Camera.ViewportSize.Y - OldSize.Y) / 2), 40)) })
                     end
                 end
             end)
@@ -5996,10 +6435,6 @@ local Library do
             local result = setmetatable(Window, self)
 
             if Window.Anonymous then Window:SetStreamerMode(true) end
-
-            if Data.HomeTab ~= false then
-                Library:CreateHomeTab(result, Data.DiscordLink or "discord.gg/expresshub")
-            end
 
             if not IsMobile and Library.GlobalChat and Library.GlobalChat.AutoConnect and not Library._GlobalChatConnected then
                 Library._GlobalChatConnected = true
@@ -8025,7 +8460,7 @@ local Library do
                 return NewKeybind
             end
 
-            local SearchData = { Name = Toggle.Name, Item = Items["Toggle"], Section = Toggle.Section }
+            local SearchData = { Name = Toggle.Name, Type = "Toggle", Item = Items["Toggle"], Section = Toggle.Section }
             local PageSearchData = Library.SearchItems[Toggle.Page]
             if not PageSearchData then return end
             TableInsert(PageSearchData, SearchData)
@@ -8144,7 +8579,7 @@ local Library do
 
             local PageSearchData = Library.SearchItems[Button.Page]
             if PageSearchData then
-                local SearchData = { Name = Button.Name, Item = Items["Buttons"], Section = Button.Section }
+                local SearchData = { Name = Button.Name, Type = "Button", Item = Items["Buttons"], Section = Button.Section }
                 TableInsert(PageSearchData, SearchData)
             end
 
@@ -8320,7 +8755,7 @@ local Library do
 
             local PageSearchData = Library.SearchItems[Slider.Page]
             if PageSearchData then
-                local SearchData = { Name = Slider.Name, Item = Items["Slider"], Section = Slider.Section }
+                local SearchData = { Name = Slider.Name, Type = "Slider", Item = Items["Slider"], Section = Slider.Section }
                 TableInsert(PageSearchData, SearchData)
             end
 
@@ -9032,7 +9467,7 @@ local Library do
 
             local PageSearchData = Library.SearchItems[Dropdown.Page]
             if PageSearchData then
-                local SearchData = { Name = Dropdown.Name, Item = Items["Dropdown"], Section = Dropdown.Section }
+                local SearchData = { Name = Dropdown.Name, Type = "Dropdown", Item = Items["Dropdown"], Section = Dropdown.Section }
                 TableInsert(PageSearchData, SearchData)
             end
 
@@ -9379,7 +9814,7 @@ local Library do
 
             local PageSearchData = Library.SearchItems[Textbox.Page]
             if PageSearchData then
-                local SearchData = { Name = Textbox.Name, Item = Items["Textbox"], Section = Textbox.Section }
+                local SearchData = { Name = Textbox.Name, Type = "Textbox", Item = Items["Textbox"], Section = Textbox.Section }
                 TableInsert(PageSearchData, SearchData)
             end
 
@@ -9494,7 +9929,7 @@ local Library do
 
             local PageSearchData = Library.SearchItems[Colorpicker.Page]
             if PageSearchData then
-                local SearchData = { Name = Colorpicker.Name, Item = Items["Label"], Section = Colorpicker.Section }
+                local SearchData = { Name = Colorpicker.Name, Type = "Colorpicker", Item = Items["Label"], Section = Colorpicker.Section }
                 TableInsert(PageSearchData, SearchData)
             end
 
@@ -9705,7 +10140,7 @@ local Library do
 
             local PageSearchData = Library.SearchItems[Toggle.Page]
             if PageSearchData then
-                local SearchData = { Name = Colorpicker.Name, Item = Items["Toggle"], Section = Toggle.Section }
+                local SearchData = { Name = Colorpicker.Name, Type = "Colorpicker", Item = Items["Toggle"], Section = Toggle.Section }
                 TableInsert(PageSearchData, SearchData)
             end
 
@@ -10088,6 +10523,13 @@ local Library do
             end
             Library.AutoSaveReady = true
         end
+
+        if Library._AutoloadChecked then
+            task.spawn(function()
+                Library:SafeCall(Library._PendingAutoload)
+                Library._PendingAutoload = nil
+            end)
+        end
     end
 
     Library.CreateSettingsSection = function(self, Tab)
@@ -10189,832 +10631,13 @@ local Library do
         AddExpressSettingToggle("Show Ping", "ShowPing", "ShowPing")
     end
 
-    Library.CreateHomeTab = function(self, Window, DiscordLink)
-        if Window and Window.HomeTab and table.find(Window.Pages, Window.HomeTab) then
-            return Window.HomeTab
-        end
-
-        if Window and Window.Pages then
-            for _, ExistingPage in ipairs(Window.Pages) do
-                if ExistingPage and ExistingPage.Name == "Home" then
-                    Window.HomeTab = ExistingPage
-                    return ExistingPage
-                end
-            end
-        end
-
-        local HomeTab = Window:MakeTab({ Name = "Home", Icon = "rbxassetid://10723407389" })
-        Window.HomeTab = HomeTab
-
-        local function AddHomeCorner(Parent, Radius)
-            Instances:Create("UICorner", { Parent = Parent, Name = "\0", CornerRadius = UDimNew(0, Radius or 12) })
-        end
-
-        HomeTab.Items["Inactive"].Instance.LayoutOrder = -1
-        local _pages = Window.Pages
-        if _pages[#_pages] == HomeTab then
-            table.remove(_pages, #_pages)
-            table.insert(_pages, 1, HomeTab)
-        end
-
-        for _, _page in ipairs(Window.Pages) do
-            if _page ~= HomeTab and _page.Active then _page:Turn(false) end
-        end
-        if not HomeTab.Active then HomeTab:Turn(true) end
-
-        local Items = {}
-
-        do
-            Items["HomeScroll"] = Instances:Create("ScrollingFrame", {
-                Parent = HomeTab.Items["Page"].Instance,
-                Name = "\0",
-                Position = UDim2New(0, 0, 0, 4),
-                Size = UDim2New(1, -8, 1, -24),
-                BackgroundTransparency = 1,
-                BorderSizePixel = 0,
-                CanvasSize = UDim2New(0, 0, 0, 0),
-                AutomaticCanvasSize = Enum.AutomaticSize.Y,
-                ScrollBarThickness = 2,
-                TopImage = "rbxassetid://105444659140695",
-                MidImage = "rbxassetid://105444659140695",
-                BottomImage = "rbxassetid://105444659140695",
-                ScrollBarImageColor3 = Library.Theme.Accent,
-                BackgroundColor3 = FromRGB(255, 255, 255)
-            })
-            Items["HomeScroll"]:AddToTheme({ ScrollBarImageColor3 = "Accent" })
-
-            local function CreateHomePanel(key, properties, theme, radius)
-                Items[key] = Instances:Create("Frame", properties)
-                if theme then Items[key]:AddToTheme(theme) end
-                AddHomeCorner(Items[key].Instance, radius)
-                return Items[key]
-            end
-
-            CreateHomePanel("SessionInfo", {
-                Parent = Items["HomeScroll"].Instance,
-                Name = "\0",
-                Position = UDim2New(0, 12, 0, 24),
-                BorderColor3 = FromRGB(0, 0, 0),
-                Size = UDim2New(1, -24, 0, 160),
-                BorderSizePixel = 0,
-                BackgroundColor3 = FromRGB(26, 25, 31)
-            }, { BackgroundColor3 = "Inline" })
-
-            Items["SessionInfoTitle"] = Instances:Create("TextLabel", {
-                Parent = Items["HomeScroll"].Instance,
-                Name = "\0",
-                FontFace = Library.Font,
-                TextColor3 = FromRGB(255, 255, 255),
-                BorderColor3 = FromRGB(0, 0, 0),
-                Text = "SESSION INFORMATION",
-                Size = UDim2New(1, -16, 0, 15),
-                BackgroundTransparency = 1,
-                TextXAlignment = Enum.TextXAlignment.Left,
-                Position = UDim2New(0, 12, 0, 4),
-                BorderSizePixel = 0,
-                TextTransparency = 0.35,
-                TextSize = 12,
-                BackgroundColor3 = FromRGB(255, 255, 255)
-            })
-            Items["SessionInfoTitle"]:AddToTheme({ TextColor3 = "Text" })
-
-            CreateHomePanel("Players", {
-                Parent = Items["SessionInfo"].Instance,
-                Name = "\0",
-                Position = UDim2New(0, 10, 0, 12),
-                BorderColor3 = FromRGB(0, 0, 0),
-                Size = UDim2New(0.44999998807907104, 0, 0.3499999940395355, 0),
-                BorderSizePixel = 0,
-                BackgroundColor3 = FromRGB(17, 16, 20)
-            }, { BackgroundColor3 = "Background" })
-
-            Items["PlayersTitle"] = Instances:Create("TextLabel", {
-                Parent = Items["Players"].Instance,
-                Name = "\0",
-                FontFace = Library.Font,
-                TextColor3 = FromRGB(255, 255, 255),
-                BorderColor3 = FromRGB(0, 0, 0),
-                Text = "Players",
-                Size = UDim2New(1, -16, 0, 15),
-                BackgroundTransparency = 1,
-                TextXAlignment = Enum.TextXAlignment.Left,
-                Position = UDim2New(0, 8, 0, 8),
-                BorderSizePixel = 0,
-                TextSize = 14,
-                BackgroundColor3 = FromRGB(255, 255, 255)
-            })
-            Items["PlayersTitle"]:AddToTheme({ TextColor3 = "Text" })
-
-            Items["CurrentPlayers"] = Instances:Create("TextLabel", {
-                Parent = Items["Players"].Instance,
-                Name = "\0",
-                FontFace = Library.Font,
-                TextWrapped = true,
-                TextColor3 = FromRGB(255, 255, 255),
-                TextTransparency = 0.4000000059604645,
-                Text = "",
-                Size = UDim2New(1, -16, 0, 15),
-                Position = UDim2New(0, 8, 0, 28),
-                BorderSizePixel = 0,
-                BorderColor3 = FromRGB(0, 0, 0),
-                BackgroundTransparency = 1,
-                TextXAlignment = Enum.TextXAlignment.Left,
-                AutomaticSize = Enum.AutomaticSize.Y,
-                TextSize = 14,
-                BackgroundColor3 = FromRGB(255, 255, 255)
-            })
-            Items["CurrentPlayers"]:AddToTheme({ TextColor3 = "Text" })
-
-            local function UpdateCurrentPlayers()
-                Items["CurrentPlayers"].Instance.Text = #Players:GetPlayers() .. " players currently online"
-            end
-            UpdateCurrentPlayers()
-            Library:Connect(Players.PlayerAdded, UpdateCurrentPlayers)
-            Library:Connect(Players.PlayerRemoving, UpdateCurrentPlayers)
-
-            CreateHomePanel("MaxPlayers", {
-                Parent = Items["SessionInfo"].Instance,
-                Name = "\0",
-                AnchorPoint = Vector2New(1, 0),
-                Position = UDim2New(1, -18, 0, 12),
-                BorderColor3 = FromRGB(0, 0, 0),
-                Size = UDim2New(0.5, -16, 0.3499999940395355, 0),
-                BorderSizePixel = 0,
-                BackgroundColor3 = FromRGB(17, 16, 20)
-            }, { BackgroundColor3 = "Background" })
-
-            Items["MaxPlayersTitle"] = Instances:Create("TextLabel", {
-                Parent = Items["MaxPlayers"].Instance,
-                Name = "\0",
-                FontFace = Library.Font,
-                TextColor3 = FromRGB(255, 255, 255),
-                BorderColor3 = FromRGB(0, 0, 0),
-                Text = "Max players",
-                Size = UDim2New(1, -16, 0, 15),
-                BackgroundTransparency = 1,
-                TextXAlignment = Enum.TextXAlignment.Left,
-                Position = UDim2New(0, 8, 0, 8),
-                BorderSizePixel = 0,
-                TextSize = 14,
-                BackgroundColor3 = FromRGB(255, 255, 255)
-            })
-            Items["MaxPlayersTitle"]:AddToTheme({ TextColor3 = "Text" })
-
-            Items["MaxPlayersAllowed"] = Instances:Create("TextLabel", {
-                Parent = Items["MaxPlayers"].Instance,
-                Name = "\0",
-                FontFace = Library.Font,
-                TextWrapped = true,
-                TextColor3 = FromRGB(255, 255, 255),
-                TextTransparency = 0.4000000059604645,
-                Text = "Maximum of " .. Players.MaxPlayers .. " people can join this experience.",
-                Size = UDim2New(1, -16, 0, 15),
-                Position = UDim2New(0, 8, 0, 28),
-                BorderSizePixel = 0,
-                BorderColor3 = FromRGB(0, 0, 0),
-                BackgroundTransparency = 1,
-                TextXAlignment = Enum.TextXAlignment.Left,
-                AutomaticSize = Enum.AutomaticSize.Y,
-                TextSize = 14,
-                BackgroundColor3 = FromRGB(255, 255, 255)
-            })
-            Items["MaxPlayersAllowed"]:AddToTheme({ TextColor3 = "Text" })
-
-            CreateHomePanel("AccountInformation", {
-                Parent = Items["SessionInfo"].Instance,
-                Name = "\0",
-                AnchorPoint = Vector2New(0, 1),
-                Position = UDim2New(0, 10, 1, -10),
-                BorderColor3 = FromRGB(0, 0, 0),
-                Size = UDim2New(1, -28, 0.44999998807907104, -20),
-                BorderSizePixel = 0,
-                BackgroundColor3 = FromRGB(17, 16, 20)
-            }, { BackgroundColor3 = "Background" })
-
-            Items["AccountAvatar"] = Instances:Create("ImageLabel", {
-                Parent = Items["AccountInformation"].Instance,
-                Name = "\0",
-                BorderColor3 = FromRGB(0, 0, 0),
-                AnchorPoint = Vector2New(0, 0.5),
-                Image = Content,
-                Position = UDim2New(0, 10, 0.5, 0),
-                Size = UDim2New(0, 44, 0, 44),
-                BorderSizePixel = 0,
-                BackgroundColor3 = FromRGB(26, 25, 31)
-            })
-            Items["AccountAvatar"]:AddToTheme({ BackgroundColor3 = "Inline" })
-            AddHomeCorner(Items["AccountAvatar"].Instance, 10)
-
-            Items["AccountDisplayName"] = Instances:Create("TextLabel", {
-                Parent = Items["AccountInformation"].Instance,
-                Name = "\0",
-                FontFace = Library.Font,
-                TextColor3 = FromRGB(255, 255, 255),
-                Text = LocalPlayer.DisplayName,
-                Size = UDim2New(1, -72, 0, 0),
-                AutomaticSize = Enum.AutomaticSize.Y,
-                AnchorPoint = Vector2New(0, 0.5),
-                Position = UDim2New(0, 64, 0.5, -23),
-                BackgroundTransparency = 1,
-                TextXAlignment = Enum.TextXAlignment.Left,
-                BorderSizePixel = 0,
-                TextSize = 15,
-                TextTruncate = Enum.TextTruncate.AtEnd
-            })
-            Items["AccountDisplayName"]:AddToTheme({ TextColor3 = "Text" })
-
-            Items["AccountUsername"] = Instances:Create("TextLabel", {
-                Parent = Items["AccountInformation"].Instance,
-                Name = "\0",
-                FontFace = Library.Font,
-                TextColor3 = FromRGB(255, 255, 255),
-                TextTransparency = 0.4,
-                Text = "@" .. LocalPlayer.Name,
-                Size = UDim2New(1, -72, 0, 0),
-                AutomaticSize = Enum.AutomaticSize.Y,
-                AnchorPoint = Vector2New(0, 0.5),
-                Position = UDim2New(0, 64, 0.5, -4),
-                BackgroundTransparency = 1,
-                TextXAlignment = Enum.TextXAlignment.Left,
-                BorderSizePixel = 0,
-                TextSize = 13,
-                TextTruncate = Enum.TextTruncate.AtEnd
-            })
-            Items["AccountUsername"]:AddToTheme({ TextColor3 = "Text" })
-
-            Window.Items["AccountAvatar"] = Items["AccountAvatar"]
-            Window.Items["AccountDisplayName"] = Items["AccountDisplayName"]
-            Window.Items["AccountUsername"] = Items["AccountUsername"]
-
-            if Library.Flags.StreamerMode or Window.Anonymous then Window:SetStreamerMode(true) end
-
-            local joinDate = os.date("%b %d, %Y", os.time() - (LocalPlayer.AccountAge * 86400))
-            Items["AccountMeta"] = Instances:Create("TextLabel", {
-                Parent = Items["AccountInformation"].Instance,
-                Name = "\0",
-                FontFace = Library.Font,
-                TextColor3 = FromRGB(255, 255, 255),
-                TextTransparency = 0.5,
-                Text = "Age: " .. LocalPlayer.AccountAge .. " days | Joined: " .. joinDate,
-                Size = UDim2New(1, -72, 0, 0),
-                AutomaticSize = Enum.AutomaticSize.Y,
-                AnchorPoint = Vector2New(0, 0.5),
-                Position = UDim2New(0, 64, 0.5, 12),
-                BackgroundTransparency = 1,
-                TextXAlignment = Enum.TextXAlignment.Left,
-                BorderSizePixel = 0,
-                TextSize = 12,
-                TextWrapped = true
-            })
-            Items["AccountMeta"]:AddToTheme({ TextColor3 = "Text" })
-
-            CreateHomePanel("Discord", {
-                Parent = Items["HomeScroll"].Instance,
-                Name = "\0",
-                Position = UDim2New(0, 12, 0, 200),
-                BorderColor3 = FromRGB(0, 0, 0),
-                Size = UDim2New(1, -24, 0, 84),
-                BorderSizePixel = 0,
-                BackgroundColor3 = FromRGB(26, 25, 31)
-            }, { BackgroundColor3 = "Inline" })
-
-            Items["DiscordIcon"] = Instances:Create("ImageLabel", {
-                Parent = Items["Discord"].Instance,
-                Name = "\0",
-                ImageColor3 = FromRGB(66, 126, 255),
-                ScaleType = Enum.ScaleType.Fit,
-                BorderColor3 = FromRGB(0, 0, 0),
-                AnchorPoint = Vector2New(0, 0.5),
-                Image = "rbxassetid://98752033517234",
-                BackgroundTransparency = 1,
-                Position = UDim2New(0, 10, 0.5, 0),
-                Size = UDim2New(0, 56, 0, 56),
-                BorderSizePixel = 0,
-                BackgroundColor3 = FromRGB(255, 255, 255)
-            })
-            AddHomeCorner(Items["DiscordIcon"].Instance, 14)
-
-            Items["AreYouNotInOurDiscordYet"] = Instances:Create("TextLabel", {
-                Parent = Items["Discord"].Instance,
-                Name = "\0",
-                FontFace = Library.Font,
-                TextColor3 = FromRGB(255, 255, 255),
-                BorderColor3 = FromRGB(0, 0, 0),
-                Text = "Not in our discord server yet?",
-                Size = UDim2New(1, -246, 0.5, -2),
-                BackgroundTransparency = 1,
-                TextXAlignment = Enum.TextXAlignment.Left,
-                TextYAlignment = Enum.TextYAlignment.Bottom,
-                Position = UDim2New(0, 76, 0, 0),
-                BorderSizePixel = 0,
-                TextSize = 14,
-                BackgroundColor3 = FromRGB(255, 255, 255)
-            })
-            Items["AreYouNotInOurDiscordYet"]:AddToTheme({ TextColor3 = "Text" })
-
-            Items["JoinDiscord"] = Instances:Create("TextButton", {
-                Parent = Items["Discord"].Instance,
-                Name = "\0",
-                FontFace = Library.Font,
-                TextColor3 = FromRGB(0, 0, 0),
-                BorderColor3 = FromRGB(0, 0, 0),
-                Text = "",
-                AutoButtonColor = false,
-                AnchorPoint = Vector2New(1, 0.5),
-                Position = UDim2New(1, -12, 0.5, 7),
-                Size = UDim2New(0.28, 0, 0, 36),
-                BorderSizePixel = 0,
-                TextSize = 14,
-                BackgroundColor3 = FromRGB(88, 101, 242)
-            })
-
-            Items["DiscordDescription"] = Instances:Create("TextLabel", {
-                Parent = Items["Discord"].Instance,
-                Name = "\0",
-                FontFace = Library.Font,
-                TextColor3 = FromRGB(255, 255, 255),
-                TextTransparency = 0.4,
-                Text = "Join to suggest features, report bugs, and connect with the community!",
-                Size = UDim2New(1, -246, 0.5, -10),
-                Position = UDim2New(0, 76, 0.5, 4),
-                BackgroundTransparency = 1,
-                TextXAlignment = Enum.TextXAlignment.Left,
-                TextYAlignment = Enum.TextYAlignment.Center,
-                TextScaled = false,
-                TextWrapped = true,
-                TextSize = 12,
-                BorderSizePixel = 0,
-                BackgroundColor3 = FromRGB(255, 255, 255)
-            })
-            Items["DiscordDescription"]:AddToTheme({ TextColor3 = "Text" })
-
-            Items["JoinDiscord"]:Connect("MouseEnter", function()
-                Items["JoinDiscord"]:Tween(nil, { BackgroundColor3 = FromRGB(102, 115, 255), Size = UDim2New(0.29, 0, 0, 38) })
-            end)
-            Items["JoinDiscord"]:Connect("MouseLeave", function()
-                Items["JoinDiscord"]:Tween(nil, { BackgroundColor3 = FromRGB(88, 101, 242), Size = UDim2New(0.28, 0, 0, 36) })
-            end)
-            Items["JoinDiscord"]:Connect("InputBegan", function(Input)
-                if Input.UserInputType == Enum.UserInputType.MouseButton1 or Input.UserInputType == Enum.UserInputType.Touch then
-                    Items["JoinDiscord"]:Tween(nil, { Size = UDim2New(0.265, 0, 0, 34) })
-                    task.wait(0.08)
-                    Items["JoinDiscord"]:Tween(nil, { Size = UDim2New(0.28, 0, 0, 36) })
-                    if DiscordLink then
-                        setclipboard(tostring(DiscordLink))
-                        pcall(function() Library:MakeNotification({ Name = "Discord", Content = "Invite copied to clipboard", Time = 3 }) end)
-                    end
-                end
-            end)
-            AddHomeCorner(Items["JoinDiscord"].Instance, 10)
-
-            Items["JoinDıscordText"] = Instances:Create("TextLabel", {
-                Parent = Items["JoinDiscord"].Instance,
-                Name = "\0",
-                FontFace = Library.Font,
-                TextColor3 = FromRGB(255, 255, 255),
-                BorderColor3 = FromRGB(0, 0, 0),
-                Text = "Join discord",
-                AnchorPoint = Vector2New(0.5, 0.5),
-                BackgroundTransparency = 1,
-                Position = UDim2New(0.5, 0, 0.5, 0),
-                Size = UDim2New(1, -10, 1, -6),
-                BorderSizePixel = 0,
-                TextScaled = false,
-                TextSize = 13,
-                BackgroundColor3 = FromRGB(255, 255, 255)
-            })
-            Items["JoinDıscordText"]:AddToTheme({ TextColor3 = "Text" })
-
-            CreateHomePanel("ExecutorInfo", {
-                Parent = Items["HomeScroll"].Instance,
-                Name = "\0",
-                AnchorPoint = Vector2New(0, 0),
-                Position = UDim2New(0, 12, 0, 300),
-                BorderColor3 = FromRGB(0, 0, 0),
-                Size = UDim2New(1, -24, 0, 58),
-                BorderSizePixel = 0,
-                BackgroundColor3 = FromRGB(26, 25, 31)
-            }, { BackgroundColor3 = "Inline" })
-
-            local function CreateHomeTextLabel(key, properties, theme)
-                Items[key] = Instances:Create("TextLabel", properties)
-                if theme then Items[key]:AddToTheme(theme) end
-                return Items[key]
-            end
-
-            CreateHomeTextLabel("BigExecutorText", {
-                Parent = Items["ExecutorInfo"].Instance,
-                Name = "\0",
-                FontFace = Library.Font,
-                TextColor3 = FromRGB(255, 255, 255),
-                BorderColor3 = FromRGB(0, 0, 0),
-                Text = "Executor: " .. getexecutorname(),
-                Size = UDim2New(1, -164, 0, 18),
-                AnchorPoint = Vector2New(0, 0),
-                BackgroundTransparency = 1,
-                TextXAlignment = Enum.TextXAlignment.Left,
-                TextYAlignment = Enum.TextYAlignment.Top,
-                Position = UDim2New(0, 12, 0, 10),
-                BorderSizePixel = 0,
-                TextSize = 15,
-                BackgroundColor3 = FromRGB(255, 255, 255)
-            }, { TextColor3 = "Text" })
-
-            local exec = (identifyexecutor and identifyexecutor() or getexecutorname() or ""):lower()
-            local unsupported = exec:find("xeno") or exec:find("solara") or exec:find("velocity")
-            local supportColor = unsupported and FromRGB(255, 170, 64) or FromRGB(67, 214, 117)
-
-            CreateHomePanel("ExecutorStatusDot", {
-                Parent = Items["ExecutorInfo"].Instance,
-                Name = "\0",
-                AnchorPoint = Vector2New(0, 0.5),
-                Position = UDim2New(0, 14, 0, 41),
-                BorderColor3 = FromRGB(0, 0, 0),
-                Size = UDim2New(0, 8, 0, 8),
-                BorderSizePixel = 0,
-                BackgroundColor3 = supportColor
-            }, nil, 8)
-
-            CreateHomeTextLabel("IsSupportedText", {
-                Parent = Items["ExecutorInfo"].Instance,
-                Name = "\0",
-                FontFace = Library.Font,
-                TextColor3 = supportColor,
-                Text = "Some features may not work properly.",
-                Size = UDim2New(1, -178, 0, 14),
-                AnchorPoint = Vector2New(0, 0),
-                Position = UDim2New(0, 30, 0, 34),
-                BackgroundTransparency = 1,
-                TextXAlignment = Enum.TextXAlignment.Left,
-                TextYAlignment = Enum.TextYAlignment.Top,
-                BorderSizePixel = 0,
-                BorderColor3 = FromRGB(0, 0, 0),
-                TextSize = 13,
-                BackgroundColor3 = FromRGB(255, 255, 255)
-            })
-
-            if unsupported then
-                Items["IsSupportedText"].Instance.Text = "Some features may not work properly."
-            else
-                Items["IsSupportedText"].Instance.Text = "Fully supported executor."
-            end
-
-            CreateHomeTextLabel("TrialTimerTitle", {
-                Parent = Items["ExecutorInfo"].Instance,
-                Name = "\0",
-                FontFace = Library.Font,
-                TextColor3 = FromRGB(255, 255, 255),
-                BorderColor3 = FromRGB(0, 0, 0),
-                Text = "TRIAL ENDS IN",
-                Size = UDim2New(0, 132, 0, 12),
-                AnchorPoint = Vector2New(1, 0),
-                Position = UDim2New(1, -12, 0, 10),
-                BackgroundTransparency = 1,
-                TextXAlignment = Enum.TextXAlignment.Right,
-                TextYAlignment = Enum.TextYAlignment.Top,
-                BorderSizePixel = 0,
-                TextTransparency = 0.35,
-                TextSize = 11,
-                Visible = false,
-                ZIndex = 2,
-                BackgroundColor3 = FromRGB(255, 255, 255)
-            }, { TextColor3 = "Text" })
-
-            CreateHomeTextLabel("TrialTimerValue", {
-                Parent = Items["ExecutorInfo"].Instance,
-                Name = "\0",
-                FontFace = Library.Font,
-                TextColor3 = Library.Theme.Accent,
-                BorderColor3 = FromRGB(0, 0, 0),
-                Text = "0M",
-                Size = UDim2New(0, 132, 0, 18),
-                AnchorPoint = Vector2New(1, 0),
-                Position = UDim2New(1, -12, 0, 28),
-                BackgroundTransparency = 1,
-                TextXAlignment = Enum.TextXAlignment.Right,
-                TextYAlignment = Enum.TextYAlignment.Top,
-                BorderSizePixel = 0,
-                TextSize = 16,
-                Visible = false,
-                ZIndex = 2,
-                BackgroundColor3 = FromRGB(255, 255, 255)
-            }, { TextColor3 = "Accent" })
-
-            CreateHomePanel("PerformanceInfo", {
-                Parent = Items["HomeScroll"].Instance,
-                Name = "\0",
-                Position = UDim2New(0, 12, 0, 400),
-                BorderColor3 = FromRGB(0, 0, 0),
-                Size = UDim2New(1, -24, 0, 74),
-                BorderSizePixel = 0,
-                BackgroundColor3 = FromRGB(26, 25, 31)
-            }, { BackgroundColor3 = "Inline" })
-
-            CreateHomeTextLabel("PerformanceTitle", {
-                Parent = Items["HomeScroll"].Instance,
-                Name = "\0",
-                FontFace = Library.Font,
-                TextColor3 = FromRGB(255, 255, 255),
-                BorderColor3 = FromRGB(0, 0, 0),
-                Text = "PERFORMANCE",
-                Size = UDim2New(1, -16, 0, 15),
-                BackgroundTransparency = 1,
-                TextXAlignment = Enum.TextXAlignment.Left,
-                Position = UDim2New(0, 12, 0, 380),
-                BorderSizePixel = 0,
-                TextTransparency = 0.35,
-                TextSize = 12,
-                BackgroundColor3 = FromRGB(255, 255, 255)
-            }, { TextColor3 = "Text" })
-
-            Items["HomeBottomSpacer"] = Instances:Create("Frame", {
-                Parent = Items["HomeScroll"].Instance,
-                Name = "\0",
-                Position = UDim2New(0, 0, 0, 486),
-                Size = UDim2New(1, 0, 0, 1),
-                BackgroundTransparency = 1,
-                BorderSizePixel = 0,
-                BackgroundColor3 = FromRGB(255, 255, 255)
-            })
-
-            local function CreatePerformanceCard(cardKey, accentKey, valueKey, descriptionKey, options)
-                CreateHomePanel(cardKey, {
-                    Parent = Items["PerformanceInfo"].Instance,
-                    Name = "\0",
-                    AnchorPoint = options.AnchorPoint or Vector2New(0, 0),
-                    Position = options.Position,
-                    BorderColor3 = FromRGB(0, 0, 0),
-                    Size = options.Size,
-                    BorderSizePixel = 0,
-                    BackgroundColor3 = FromRGB(17, 16, 20)
-                }, { BackgroundColor3 = "Background" })
-
-                Items[accentKey] = Instances:Create("Frame", {
-                    Parent = Items[cardKey].Instance,
-                    Name = "\0",
-                    Position = UDim2New(0, 8, 0, 12),
-                    BorderColor3 = FromRGB(0, 0, 0),
-                    Size = UDim2New(0, 3, 0, 30),
-                    BorderSizePixel = 0,
-                    BackgroundColor3 = options.AccentColor
-                })
-                if options.AccentTheme then Items[accentKey]:AddToTheme({ BackgroundColor3 = options.AccentTheme }) end
-                Instances:Create("UICorner", { Parent = Items[accentKey].Instance, Name = "\0", CornerRadius = UDimNew(1, 0) })
-
-                CreateHomeTextLabel(valueKey, {
-                    Parent = Items[cardKey].Instance,
-                    Name = "\0",
-                    FontFace = Library.Font,
-                    TextColor3 = FromRGB(255, 255, 255),
-                    BorderColor3 = FromRGB(0, 0, 0),
-                    Text = options.ValueText,
-                    Size = UDim2New(1, -28, 0, 16),
-                    Position = UDim2New(0, 20, 0, 10),
-                    BackgroundTransparency = 1,
-                    TextXAlignment = Enum.TextXAlignment.Left,
-                    BorderSizePixel = 0,
-                    TextSize = 13,
-                    BackgroundColor3 = FromRGB(255, 255, 255)
-                }, { TextColor3 = "Text" })
-
-                CreateHomeTextLabel(descriptionKey, {
-                    Parent = Items[cardKey].Instance,
-                    Name = "\0",
-                    FontFace = Library.Font,
-                    TextColor3 = FromRGB(255, 255, 255),
-                    TextTransparency = 0.45,
-                    BorderColor3 = FromRGB(0, 0, 0),
-                    Text = options.DescriptionText,
-                    Size = UDim2New(1, -28, 0, 14),
-                    Position = UDim2New(0, 20, 0, 28),
-                    BackgroundTransparency = 1,
-                    TextXAlignment = Enum.TextXAlignment.Left,
-                    BorderSizePixel = 0,
-                    TextSize = 12,
-                    BackgroundColor3 = FromRGB(255, 255, 255)
-                }, { TextColor3 = "Text" })
-            end
-
-            CreatePerformanceCard("FPSCard", "FPSAccent", "FPSValue", "FPSDescription", {
-                Position = UDim2New(0, 8, 0, 9),
-                Size = UDim2New(0.5, -10, 0, 56),
-                AccentColor = Library.Theme.Accent,
-                AccentTheme = "Accent",
-                ValueText = "FPS: 0",
-                DescriptionText = "frames per second"
-            })
-
-            CreatePerformanceCard("PingCard", "PingAccent", "PingValue", "PingDescription", {
-                AnchorPoint = Vector2New(1, 0),
-                Position = UDim2New(1, -8, 0, 9),
-                Size = UDim2New(0.5, -10, 0, 56),
-                AccentColor = FromRGB(88, 113, 255),
-                ValueText = "Ping: 0 ms",
-                DescriptionText = "network latency"
-            })
-
-            local function UpdatePerformanceLayout()
-                local ShowFPS = Library.ExpressExtraSettings and Library.ExpressExtraSettings.ShowFPS == true
-                local ShowPing = Library.ExpressExtraSettings and Library.ExpressExtraSettings.ShowPing == true
-                Items["PerformanceInfo"].Instance.Visible = ShowFPS or ShowPing
-                Items["FPSCard"].Instance.Visible = ShowFPS
-                Items["PingCard"].Instance.Visible = ShowPing
-
-                if ShowFPS and ShowPing then
-                    Items["FPSCard"].Instance.Size = UDim2New(0.5, -10, 0, 56)
-                    Items["FPSCard"].Instance.Position = UDim2New(0, 8, 0, 9)
-                    Items["PingCard"].Instance.Size = UDim2New(0.5, -10, 0, 56)
-                    Items["PingCard"].Instance.Position = UDim2New(1, -8, 0, 9)
-                elseif ShowFPS then
-                    Items["FPSCard"].Instance.Size = UDim2New(1, -16, 0, 56)
-                    Items["FPSCard"].Instance.Position = UDim2New(0, 8, 0, 9)
-                elseif ShowPing then
-                    Items["PingCard"].Instance.Size = UDim2New(1, -16, 0, 56)
-                    Items["PingCard"].Instance.Position = UDim2New(1, -8, 0, 9)
-                end
-            end
-
-            local function FormatTrialRemaining(remainingMs)
-                local totalMs = math.max(0, MathFloor(tonumber(remainingMs) or 0))
-                local totalMinutes = MathFloor(totalMs / 60000)
-                local days = math.floor(totalMinutes / 1440)
-                local hours = math.floor((totalMinutes % 1440) / 60)
-                local minutes = totalMinutes % 60
-                local seconds = MathFloor((totalMs % 60000) / 1000)
-                local parts = {}
-                if days > 0 then TableInsert(parts, tostring(days) .. "D") end
-                if hours > 0 then TableInsert(parts, tostring(hours) .. "H") end
-                if minutes > 0 or #parts > 0 then TableInsert(parts, tostring(minutes) .. "M") end
-                if #parts == 0 then TableInsert(parts, tostring(seconds) .. "S") end
-                return table.concat(parts, " ")
-            end
-
-            local TrialCountdownRemainingMs = 0
-            local TrialCountdownSyncedAt = 0
-            local TrialCountdownRefreshAt = 0
-
-            local function ResolveTrialRemainingFromSnapshot(remainingMs, syncedAt)
-                return math.max(0, (tonumber(remainingMs) or 0) - math.max(0, (tick() - (tonumber(syncedAt) or tick())) * 1000))
-            end
-
-            local function ResolveTrialCountdownRemaining()
-                local TrialMgr = Library.TrialManager
-                if not TrialMgr then return 0 end
-                local syncedAt = tonumber(TrialMgr.LastKnownSyncedAt) or 0
-                if TrialMgr.CachedTrialActive and tonumber(TrialMgr.CachedRemainingMs) and tonumber(TrialMgr.CachedRemainingMs) > 0 then
-                    return ResolveTrialRemainingFromSnapshot(TrialMgr.CachedRemainingMs, syncedAt)
-                end
-                if TrialMgr.LastKnownTrialActive and tonumber(TrialMgr.LastKnownRemainingMs) and tonumber(TrialMgr.LastKnownRemainingMs) > 0 then
-                    return ResolveTrialRemainingFromSnapshot(TrialMgr.LastKnownRemainingMs, syncedAt)
-                end
-                return 0
-            end
-
-            local function SyncTrialCountdown()
-                TrialCountdownRemainingMs = ResolveTrialCountdownRemaining()
-                TrialCountdownSyncedAt = TrialCountdownRemainingMs > 0 and tick() or 0
-                Window.TrialActive = TrialCountdownRemainingMs > 0
-                return Window.TrialActive, TrialCountdownRemainingMs
-            end
-
-            local function RefreshTrialCountdown()
-                if not Library.CheckTrialStatus then
-                    Window.TrialActive = false
-                    TrialCountdownRemainingMs = 0
-                    TrialCountdownSyncedAt = 0
-                    TrialCountdownRefreshAt = 0
-                    return false, 0
-                end
-
-                local TrialMgr = Library.TrialManager
-                if TrialMgr then TrialMgr.Cached = false end
-                pcall(Library.CheckTrialStatus)
-                local cachedActive, cachedRemainingMs = SyncTrialCountdown()
-                TrialCountdownRefreshAt = tick()
-                return cachedActive, cachedRemainingMs
-            end
-
-            local function UpdateTrialCountdownDisplay(forceRefresh)
-                local TrialVisible = Window.PremiumRequired == true
-                local TrialText = nil
-
-                if not TrialVisible then
-                    Window.TrialActive = false
-                    Items["TrialTimerTitle"].Instance.Visible = false
-                    Items["TrialTimerValue"].Instance.Visible = false
-                    return false, nil
-                end
-
-                if TrialVisible then
-                    if forceRefresh or TrialCountdownRefreshAt <= 0 or (tick() - TrialCountdownRefreshAt) >= 5 then
-                        local Active = RefreshTrialCountdown()
-                        TrialVisible = Active == true
-                    elseif TrialCountdownSyncedAt <= 0 then
-                        local Active = SyncTrialCountdown()
-                        TrialVisible = Active == true
-                    end
-
-                    local RemainingMs = math.max(0, TrialCountdownRemainingMs - math.max(0, (tick() - TrialCountdownSyncedAt) * 1000))
-                    if RemainingMs > 0 then
-                        TrialText = FormatTrialRemaining(RemainingMs)
-                    else
-                        TrialVisible = false
-                    end
-                end
-
-                Items["TrialTimerTitle"].Instance.Visible = TrialVisible
-                Items["TrialTimerValue"].Instance.Visible = TrialVisible
-                if TrialVisible and TrialText then Items["TrialTimerValue"].Instance.Text = TrialText end
-                return TrialVisible, TrialText
-            end
-
-            local function UpdateHomeLayout()
-                local stacked = Items["SessionInfo"].Instance.AbsoluteSize.X < 560
-                if stacked then
-                    Items["SessionInfo"].Instance.Size = UDim2New(1, -24, 0, 216)
-                    Items["Players"].Instance.Size = UDim2New(1, -20, 0, 48)
-                    Items["MaxPlayers"].Instance.AnchorPoint = Vector2New(0, 0)
-                    Items["MaxPlayers"].Instance.Position = UDim2New(0, 10, 0, 68)
-                    Items["MaxPlayers"].Instance.Size = UDim2New(1, -20, 0, 56)
-                    Items["AccountInformation"].Instance.AnchorPoint = Vector2New(0, 0)
-                    Items["AccountInformation"].Instance.Position = UDim2New(0, 10, 0, 136)
-                    Items["AccountInformation"].Instance.Size = UDim2New(1, -20, 0, 70)
-                else
-                    Items["SessionInfo"].Instance.Size = UDim2New(1, -24, 0, 160)
-                    Items["Players"].Instance.Size = UDim2New(0.44999998807907104, 0, 0.3499999940395355, 0)
-                    Items["MaxPlayers"].Instance.AnchorPoint = Vector2New(1, 0)
-                    Items["MaxPlayers"].Instance.Position = UDim2New(1, -18, 0, 12)
-                    Items["MaxPlayers"].Instance.Size = UDim2New(0.5, -16, 0.3499999940395355, 0)
-                    Items["AccountInformation"].Instance.AnchorPoint = Vector2New(0, 1)
-                    Items["AccountInformation"].Instance.Position = UDim2New(0, 10, 1, -10)
-                    Items["AccountInformation"].Instance.Size = UDim2New(1, -28, 0.44999998807907104, -20)
-                end
-
-                local y = 24
-                Items["SessionInfo"].Instance.Position = UDim2New(0, 12, 0, y)
-                y = y + Items["SessionInfo"].Instance.AbsoluteSize.Y + 16
-                Items["Discord"].Instance.Position = UDim2New(0, 12, 0, y)
-                y = y + Items["Discord"].Instance.AbsoluteSize.Y + 16
-                Items["ExecutorInfo"].Instance.Position = UDim2New(0, 12, 0, y)
-                y = y + Items["ExecutorInfo"].Instance.AbsoluteSize.Y + 18
-                Items["PerformanceTitle"].Instance.Position = UDim2New(0, 12, 0, y)
-                y = y + 20
-                Items["PerformanceInfo"].Instance.Position = UDim2New(0, 12, 0, y)
-                Items["HomeBottomSpacer"].Instance.Position = UDim2New(0, 0, 0, y + Items["PerformanceInfo"].Instance.AbsoluteSize.Y + 12)
-            end
-
-            task.spawn(function()
-                local LastFPS, LastPing, LastShowFPS, LastShowPing
-                while Library and Items["PerformanceInfo"] and Items["PerformanceInfo"].Instance and Items["PerformanceInfo"].Instance.Parent do
-                    local ShowFPS = Library.ExpressExtraSettings and Library.ExpressExtraSettings.ShowFPS == true
-                    local ShowPing = Library.ExpressExtraSettings and Library.ExpressExtraSettings.ShowPing == true
-
-                    if LastShowFPS ~= ShowFPS or LastShowPing ~= ShowPing then
-                        UpdatePerformanceLayout()
-                        LastShowFPS = ShowFPS
-                        LastShowPing = ShowPing
-                    end
-
-                    if ShowFPS then
-                        local FPS = Stats.Workspace.Heartbeat:GetValueString():match("^(%d+)") or "0"
-                        local FPSText = "FPS: " .. FPS
-                        if FPSText ~= LastFPS then
-                            Items["FPSValue"].Instance.Text = FPSText
-                            LastFPS = FPSText
-                        end
-                    end
-
-                    if ShowPing then
-                        local PingText = "Ping: " .. MathFloor(Stats.Network.ServerStatsItem["Data Ping"]:GetValue() + 0.5) .. " ms"
-                        if PingText ~= LastPing then
-                            Items["PingValue"].Instance.Text = PingText
-                            LastPing = PingText
-                        end
-                    end
-
-                    task.wait(0.2)
-                end
-            end)
-
-            task.spawn(function()
-                while Library and Items["ExecutorInfo"] and Items["ExecutorInfo"].Instance and Items["ExecutorInfo"].Instance.Parent do
-                    UpdateTrialCountdownDisplay(false)
-                    task.wait(0.2)
-                end
-            end)
-
-            Library:Connect(Items["HomeScroll"].Instance:GetPropertyChangedSignal("AbsoluteSize"), UpdateHomeLayout)
-            UpdateTrialCountdownDisplay(true)
-            UpdateHomeLayout()
-            UpdatePerformanceLayout()
-        end
-    end
 end
 
 getgenv().Library = Library
 
 task.defer(function()
     task.wait(1)
+    if Library then Library._AutoloadChecked = true end
     if Library and Library._PendingAutoload then
         Library:SafeCall(Library._PendingAutoload)
         Library._PendingAutoload = nil

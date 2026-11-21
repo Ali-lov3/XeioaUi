@@ -11,7 +11,6 @@ Library:MakeLoadingScreen({
 local Window = Library:MakeWindow({
     Name = "Title",
     Logo = "77434646025119",
-    HomeTab = false,
     Anonymous = false,
     DiscordLink = "discord.gg/example"
 })
@@ -286,3 +285,17 @@ WatermarkSection:AddTextbox({
 })
 
 PlayerlistSubTab:Playerlist({})
+
+local SettingsTab = Window:MakeTab({
+    Name = "Settings",
+    Icon = "settings"
+})
+
+local ConfigSubTab = SettingsTab:AddSubTab({
+    Name = "Config",
+    Icon = "save",
+    Columns = 2
+})
+
+Library:CreateSettingsSection(ConfigSubTab)
+Library:CreateConfigsSection(ConfigSubTab)
