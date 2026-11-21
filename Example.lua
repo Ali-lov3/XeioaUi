@@ -12,6 +12,7 @@ local Window = Library:MakeWindow({
     Name = "Title",
     Logo = "77434646025119",
     HomeTab = false,
+    Anonymous = false,
     DiscordLink = "discord.gg/example"
 })
 

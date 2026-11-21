@@ -5238,6 +5238,7 @@ local Library do
                 Name = Data.Name or Data.name or "Window",
                 Logo = Data.Logo or Data.logo or "77434646025119",
                 CloseCallback = Data.CloseCallback or Data.closecallback or function() end,
+                Anonymous = (Data.Anonymous or Data.anonymous) == true,
                 PremiumRequired = PremiumRequired == true,
                 TrialActive = TrialActive == true,
                 Pages = {},
@@ -5558,7 +5559,7 @@ local Library do
                     BackgroundTransparency = 1,
                     Position = UDim2New(0, 0, 0, 45),
                     BorderColor3 = FromRGB(0, 0, 0),
-                    Size = UDim2New(0, 185, 1, -45),
+                    Size = UDim2New(0, 150, 1, -45),
                     BorderSizePixel = 0,
                     BackgroundColor3 = FromRGB(255, 255, 255)
                 })
@@ -5599,7 +5600,7 @@ local Library do
                     Image = "",
                     BackgroundTransparency = 1,
                     Position = UDim2New(0, 8, 0.5, 0),
-                    Size = UDim2New(0, 35, 0, 35),
+                    Size = UDim2New(0, 32, 0, 32),
                     BorderSizePixel = 0,
                     BackgroundColor3 = FromRGB(255, 255, 255)
                 })
@@ -5613,9 +5614,9 @@ local Library do
                     TextColor3 = FromRGB(255, 255, 255),
                     BorderColor3 = FromRGB(0, 0, 0),
                     Text = LocalPlayer.Name,
-                    Size = UDim2New(1, -64, 0, 15),
+                    Size = UDim2New(1, -52, 0, 15),
                     BackgroundTransparency = 1,
-                    Position = UDim2New(0, 47, 0, 10),
+                    Position = UDim2New(0, 46, 0, 10),
                     BorderSizePixel = 0,
                     TextSize = 14,
                     TextXAlignment = Enum.TextXAlignment.Left,
@@ -5632,10 +5633,10 @@ local Library do
                     TextColor3 = FromRGB(255, 255, 255),
                     TextTransparency = 0.4000000059604645,
                     Text = ResolvePlaceName(),
-                    Size = UDim2New(1, -64, 0, 15),
+                    Size = UDim2New(1, -52, 0, 15),
                     BorderSizePixel = 0,
                     BackgroundTransparency = 1,
-                    Position = UDim2New(0, 47, 0, 28),
+                    Position = UDim2New(0, 46, 0, 28),
                     BorderColor3 = FromRGB(0, 0, 0),
                     TextTruncate = Enum.TextTruncate.AtEnd,
                     TextSize = 12,
@@ -5685,9 +5686,9 @@ local Library do
                     Parent = Items["MainFrame"].Instance,
                     Name = "\0",
                     BackgroundTransparency = 1,
-                    Position = UDim2New(0, 185, 0, 45),
+                    Position = UDim2New(0, 150, 0, 45),
                     BorderColor3 = FromRGB(0, 0, 0),
-                    Size = UDim2New(1, -185, 1, -45),
+                    Size = UDim2New(1, -150, 1, -45),
                     BorderSizePixel = 0,
                     BackgroundColor3 = FromRGB(255, 255, 255)
                 })
@@ -5829,6 +5830,7 @@ local Library do
             end
 
             function Window:SetStreamerMode(Bool)
+                if Window.Anonymous then Bool = true end
                 local Avatar = Bool and StreamerContent or Content
                 local Username = Bool and StreamerName or LocalPlayer.Name
                 local DisplayName = Bool and StreamerName or LocalPlayer.DisplayName
@@ -5837,6 +5839,7 @@ local Library do
                 if Items["AccountAvatar"] then Items["AccountAvatar"].Instance.Image = Avatar end
                 if Items["AccountDisplayName"] then Items["AccountDisplayName"].Instance.Text = DisplayName end
                 if Items["AccountUsername"] then Items["AccountUsername"].Instance.Text = "@" .. Username end
+                if Window.ApplyHomeManagerAccount then Window.ApplyHomeManagerAccount(Bool) end
             end
 
             function Window:SetBackgroundImage(Image)
@@ -5975,6 +5978,8 @@ local Library do
             task.defer(function() Library:AttachExpressButton(Window) end)
 
             local result = setmetatable(Window, self)
+
+            if Window.Anonymous then Window:SetStreamerMode(true) end
 
             if Data.HomeTab ~= false then
                 Library:CreateHomeTab(result, Data.DiscordLink or "discord.gg/expresshub")
@@ -6612,16 +6617,41 @@ local Library do
             local AccountSection = HomeSubTab:AddSection({ Name = "Account", Side = 1 })
             local AccountCard = MakeCard(AccountSection.Items["Content"].Instance, 72)
             local Avatar = MakeImage(AccountCard.Instance, UDim2New(0, 10, 0, 10), UDim2New(0, 52, 0, 52), UDimNew(1, 0))
-            MakeText(AccountCard.Instance, LocalPlayer.DisplayName, UDim2New(1, -78, 0, 18), UDim2New(0, 70, 0, 11), 16, 0, false)
-            MakeText(AccountCard.Instance, "@" .. LocalPlayer.Name, UDim2New(1, -78, 0, 16), UDim2New(0, 70, 0, 31), 13, 0.4, true)
-            MakeText(AccountCard.Instance, "ID: " .. tostring(LocalPlayer.UserId), UDim2New(1, -78, 0, 14), UDim2New(0, 70, 0, 48), 12, 0.5, true)
+            local AccountDisplay = MakeText(AccountCard.Instance, LocalPlayer.DisplayName, UDim2New(1, -78, 0, 18), UDim2New(0, 70, 0, 11), 16, 0, false)
+            local AccountUser = MakeText(AccountCard.Instance, "@" .. LocalPlayer.Name, UDim2New(1, -78, 0, 16), UDim2New(0, 70, 0, 31), 13, 0.4, true)
+            local AccountId = MakeText(AccountCard.Instance, "ID: " .. tostring(LocalPlayer.UserId), UDim2New(1, -78, 0, 14), UDim2New(0, 70, 0, 48), 12, 0.5, true)
+
+            local AvatarImage = "rbxthumb://type=AvatarHeadShot&id=" .. tostring(LocalPlayer.UserId) .. "&w=150&h=150"
+            local AccountHidden = HomeManager.Window.Anonymous == true or Library.Flags.StreamerMode == true
+
+            local function ApplyAccount(Hidden)
+                AccountHidden = Hidden == true
+                if not Avatar.Instance.Parent then return end
+                if AccountHidden then
+                    AccountDisplay.Instance.Text = StreamerName
+                    AccountUser.Instance.Text = "@" .. StreamerName
+                    AccountId.Instance.Text = "ID: Hidden"
+                    Avatar.Instance.Image = StreamerContent
+                else
+                    AccountDisplay.Instance.Text = LocalPlayer.DisplayName
+                    AccountUser.Instance.Text = "@" .. LocalPlayer.Name
+                    AccountId.Instance.Text = "ID: " .. tostring(LocalPlayer.UserId)
+                    Avatar.Instance.Image = AvatarImage
+                end
+            end
+
+            HomeManager.Window.ApplyHomeManagerAccount = ApplyAccount
+            ApplyAccount(AccountHidden)
 
             task.spawn(function()
                 local Success, Result = pcall(function()
                     return (Players:GetUserThumbnailAsync(LocalPlayer.UserId, Enum.ThumbnailType.HeadShot, Enum.ThumbnailSize.Size150x150))
                 end)
-                if Success and Result and Avatar.Instance.Parent then
-                    Avatar.Instance.Image = Result
+                if Success and Result then
+                    AvatarImage = Result
+                    if not AccountHidden and Avatar.Instance.Parent then
+                        Avatar.Instance.Image = Result
+                    end
                 end
             end)
 
@@ -10400,7 +10430,7 @@ local Library do
             Window.Items["AccountDisplayName"] = Items["AccountDisplayName"]
             Window.Items["AccountUsername"] = Items["AccountUsername"]
 
-            if Library.Flags.StreamerMode then Window:SetStreamerMode(true) end
+            if Library.Flags.StreamerMode or Window.Anonymous then Window:SetStreamerMode(true) end
 
             local joinDate = os.date("%b %d, %Y", os.time() - (LocalPlayer.AccountAge * 86400))
             Items["AccountMeta"] = Instances:Create("TextLabel", {
