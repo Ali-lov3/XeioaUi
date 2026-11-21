@@ -7213,6 +7213,181 @@ local Library do
             GameSection:SetOpen(true)
             ServerSection:SetOpen(true)
 
+            local DiscordState = { Holder = nil, Token = 0 }
+
+            local function ParseInvite(Link)
+                Link = tostring(Link or "")
+                return Link:match("discord%.gg/([%w%-_]+)") or Link:match("invite/([%w%-_]+)") or Link:match("^([%w%-_]+)$")
+            end
+
+            local function TryRpcJoin(Code)
+                if not RequestFunction then return false end
+                local Success, Response = pcall(RequestFunction, {
+                    Url = "http://127.0.0.1:6463/rpc?v=1",
+                    Method = "POST",
+                    Headers = {
+                        ["Content-Type"] = "application/json",
+                        ["Origin"] = "https://discord.com"
+                    },
+                    Body = HttpService:JSONEncode({
+                        cmd = "INVITE_BROWSER",
+                        args = { code = Code },
+                        nonce = HttpService:GenerateGUID(false)
+                    })
+                })
+                return Success and type(Response) == "table" and (Response.StatusCode == 200 or Response.Success == true)
+            end
+
+            local function FetchIcon(GuildId, IconHash, CustomUrl)
+                local Url = CustomUrl or ("https://cdn.discordapp.com/icons/" .. tostring(GuildId) .. "/" .. tostring(IconHash) .. ".png?size=256")
+                local Path = Library.Folders.Assets .. "/discord_" .. tostring(GuildId or "custom") .. ".png"
+                local Success, Result = pcall(function()
+                    writefile(Path, game:HttpGet(Url))
+                    return getcustomasset(Path)
+                end)
+                if Success and Result then return Result end
+                return nil
+            end
+
+            function HomeManager:AddDiscord(Config)
+                if type(Config) == "string" then Config = { Link = Config } end
+                Config = Config or {}
+
+                local Code = ParseInvite(Config.Link or Config.Invite or Config.Url)
+                if not Code then return nil end
+
+                DiscordState.Token = DiscordState.Token + 1
+                local Token = DiscordState.Token
+                if DiscordState.Holder then
+                    DiscordState.Holder:Clean()
+                    DiscordState.Holder = nil
+                end
+
+                local CardHeight = Config.Height or 76
+                local Holder = Instances:Create("Frame", {
+                    Parent = HomeSubTab.Items["Page"].Instance,
+                    Name = "\0",
+                    LayoutOrder = -1,
+                    BackgroundTransparency = 1,
+                    BorderSizePixel = 0,
+                    Size = UDim2New(1, 0, 0, CardHeight + 8)
+                })
+                DiscordState.Holder = Holder
+
+                HomeSubTab.Items["Columns"].Instance.Size = UDim2New(1, 0, 1, -(CardHeight + 16))
+
+                local Card = MakeCard(Holder.Instance, CardHeight)
+                Card.Instance.Position = UDim2New(0, 8, 0, 8)
+                Card.Instance.Size = UDim2New(1, -16, 0, CardHeight - 8)
+
+                local InnerSize = CardHeight - 8
+                local LogoSize = InnerSize - 20
+                local Logo = MakeImage(Card.Instance, UDim2New(0, 10, 0.5, -LogoSize / 2), UDim2New(0, LogoSize, 0, LogoSize), UDimNew(0, 10))
+                Logo.Instance.Image = ""
+
+                local Initial = MakeText(Logo.Instance, "D", UDim2New(1, 0, 1, 0), UDim2New(0, 0, 0, 0), 22, 0, false)
+                Initial.Instance.TextXAlignment = Enum.TextXAlignment.Center
+
+                local TextX = LogoSize + 22
+                local ButtonWidth = 76
+                local TextWidth = UDim2New(1, -(TextX + ButtonWidth + 22), 0, 18)
+
+                local Title = MakeText(Card.Instance, Config.Title or Config.Name or "Discord", TextWidth, UDim2New(0, TextX, 0, 10), 16, 0, false)
+                local Description = MakeText(Card.Instance, Config.Description or "Join our Discord server", UDim2New(1, -(TextX + ButtonWidth + 22), 0, 16), UDim2New(0, TextX, 0, 30), 13, 0.4, true)
+                local Counts = MakeText(Card.Instance, "", UDim2New(1, -(TextX + ButtonWidth + 22), 0, 14), UDim2New(0, TextX, 0, 48), 12, 0.5, true)
+                Counts.Instance.Visible = false
+
+                local Button = Instances:Create("TextButton", {
+                    Parent = Card.Instance,
+                    Name = "\0",
+                    FontFace = Library.Font,
+                    Text = Config.ButtonText or "Join",
+                    TextSize = 14,
+                    TextColor3 = FromRGB(255, 255, 255),
+                    AutoButtonColor = false,
+                    AnchorPoint = Vector2New(1, 0.5),
+                    Position = UDim2New(1, -12, 0.5, 0),
+                    Size = UDim2New(0, ButtonWidth, 0, 32),
+                    BorderSizePixel = 0,
+                    BackgroundColor3 = FromRGB(88, 101, 242)
+                })
+                Button:AddToTheme({ BackgroundColor3 = "Accent" })
+                Instances:Create("UICorner", {
+                    Parent = Button.Instance,
+                    Name = "\0",
+                    CornerRadius = UDimNew(0, 6)
+                })
+
+                Button:OnHover(function() Button:Tween(nil, { BackgroundTransparency = 0.2 }) end)
+                Button:OnHoverLeave(function() Button:Tween(nil, { BackgroundTransparency = 0 }) end)
+
+                local InviteUrl = "https://discord.gg/" .. Code
+                Button:Connect("MouseButton1Click", function()
+                    task.spawn(function()
+                        if TryRpcJoin(Code) then
+                            Notify("Opening Discord invite...")
+                            return
+                        end
+                        local Setter = setclipboard or toclipboard
+                        if Setter and pcall(Setter, InviteUrl) then
+                            Notify("Invite link copied to clipboard.")
+                        else
+                            Notify(InviteUrl)
+                        end
+                    end)
+                end)
+
+                task.spawn(function()
+                    local Info = FetchJson("https://discord.com/api/v10/invites/" .. Code .. "?with_counts=true")
+                    if Token ~= DiscordState.Token or not Card.Instance.Parent then return end
+                    if type(Info) ~= "table" or type(Info.guild) ~= "table" then
+                        if not Config.Title and not Config.Name then Title.Instance.Text = "Invalid invite" end
+                        return
+                    end
+
+                    local Guild = Info.guild
+                    if not Config.Title and not Config.Name then
+                        Title.Instance.Text = tostring(Guild.name or "Discord")
+                    end
+                    Initial.Instance.Text = string.upper(string.sub(tostring(Guild.name or "D"), 1, 1))
+
+                    if Config.ShowCounts ~= false and (Info.approximate_member_count or Info.approximate_presence_count) then
+                        local Parts = {}
+                        if Info.approximate_presence_count then TableInsert(Parts, tostring(Info.approximate_presence_count) .. " online") end
+                        if Info.approximate_member_count then TableInsert(Parts, tostring(Info.approximate_member_count) .. " members") end
+                        Counts.Instance.Text = TableConcat(Parts, "  •  ")
+                        Counts.Instance.Visible = true
+                    end
+
+                    if Config.Icon then
+                        local CustomIcon = FetchIcon(nil, nil, Config.Icon)
+                        if CustomIcon and Token == DiscordState.Token and Logo.Instance.Parent then
+                            Logo.Instance.Image = CustomIcon
+                            Initial.Instance.Visible = false
+                        end
+                    elseif Guild.id and Guild.icon then
+                        local Icon = FetchIcon(Guild.id, Guild.icon)
+                        if Icon and Token == DiscordState.Token and Logo.Instance.Parent then
+                            Logo.Instance.Image = Icon
+                            Initial.Instance.Visible = false
+                        end
+                    end
+                end)
+
+                HomeManager.Discord = Card
+                return Card
+            end
+
+            local DiscordConfig = Data.Discord
+            if type(DiscordConfig) == "string" then DiscordConfig = { Link = DiscordConfig } end
+            if type(DiscordConfig) ~= "table" and Data.DiscordLink then
+                DiscordConfig = { Link = Data.DiscordLink }
+            end
+            if type(DiscordConfig) == "table" then
+                HomeManager:AddDiscord(DiscordConfig)
+            end
+
+
             function HomeManager:AddChangelog(Entry)
                 if type(Entry) == "string" then Entry = { Changes = { Entry } } end
                 Entry = Entry or {}

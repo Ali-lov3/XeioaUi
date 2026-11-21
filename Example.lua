@@ -28,7 +28,14 @@ local HomeTab = Window:MakeTab({
     Icon = "home"
 })
 
-local HomeManager = HomeTab:HomeManager({})
+local HomeManager = HomeTab:HomeManager({
+    Discord = {
+        Link = "https://discord.gg/9a57P5epR",
+        Description = "Join our Discord server",
+        ButtonText = "Join",
+        ShowCounts = true
+    }
+})
 
 HomeManager:AddChangelog({
     Version = "v1.0.0",
