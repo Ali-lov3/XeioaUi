@@ -351,7 +351,7 @@ local Library do
         ["Preset"] = {
             ["Background"] = FromRGB(17, 16, 20),
             ["Inline"] = FromRGB(26, 25, 31),
-            ["Accent"] = FromRGB(255, 0, 255),
+            ["Accent"] = FromRGB(45, 135, 255),
             ["Text"] = FromRGB(255, 255, 255),
             ["Element"] = FromRGB(41, 40, 49),
             ["Hovered Element"] = FromRGB(51, 50, 59),
@@ -4018,7 +4018,7 @@ local Library do
 
         Widgets.ImageStroke = Instances:Create("UIStroke", {
             Parent = Widgets.ImageLabel.Instance,
-            Color = Color3.fromRGB(255, 0, 255),
+            Color = Color3.fromRGB(45, 135, 255),
             Thickness = 1
         })
 
@@ -5766,7 +5766,7 @@ local Library do
                     Name = "\0",
                     FillDirection = Enum.FillDirection.Horizontal,
                     HorizontalFlex = Enum.UIFlexAlignment.Fill,
-                    Padding = UDimNew(0, 4),
+                    Padding = UDimNew(0, 8),
                     SortOrder = Enum.SortOrder.LayoutOrder
                 })
 
@@ -5789,16 +5789,16 @@ local Library do
                     Instances:Create("UIPadding", {
                         Parent = NewColumn.Instance,
                         Name = "\0",
-                        PaddingTop = UDimNew(0, 5),
-                        PaddingBottom = UDimNew(0, 5),
-                        PaddingRight = UDimNew(0, 5),
-                        PaddingLeft = UDimNew(0, 5)
+                        PaddingTop = UDimNew(0, 8),
+                        PaddingBottom = UDimNew(0, 8),
+                        PaddingRight = UDimNew(0, 8),
+                        PaddingLeft = UDimNew(0, 8)
                     })
 
                     Instances:Create("UIListLayout", {
                         Parent = NewColumn.Instance,
                         Name = "\0",
-                        Padding = UDimNew(0, 15),
+                        Padding = UDimNew(0, 14),
                         SortOrder = Enum.SortOrder.LayoutOrder
                     })
 
@@ -6142,7 +6142,7 @@ local Library do
                     BorderSizePixel = 0,
                     AutomaticCanvasSize = Enum.AutomaticSize.Y,
                     CanvasSize = UDim2New(0, 0, 0, 0),
-                    ScrollBarImageColor3 = FromRGB(255, 0, 255),
+                    ScrollBarImageColor3 = FromRGB(45, 135, 255),
                     ScrollBarThickness = 2,
                     ScrollingDirection = Enum.ScrollingDirection.Y
                 })
@@ -6553,7 +6553,7 @@ local Library do
                         Name = "\0",
                         FillDirection = Enum.FillDirection.Horizontal,
                         HorizontalFlex = Enum.UIFlexAlignment.Fill,
-                        Padding = UDimNew(0, 4),
+                        Padding = UDimNew(0, 8),
                         SortOrder = Enum.SortOrder.LayoutOrder
                     })
 
@@ -6577,16 +6577,16 @@ local Library do
                         Instances:Create("UIPadding", {
                             Parent = NewColumn.Instance,
                             Name = "\0",
-                            PaddingTop = UDimNew(0, 5),
-                            PaddingBottom = UDimNew(0, 5),
-                            PaddingRight = UDimNew(0, 5),
-                            PaddingLeft = UDimNew(0, 5)
+                            PaddingTop = UDimNew(0, 8),
+                            PaddingBottom = UDimNew(0, 8),
+                            PaddingRight = UDimNew(0, 8),
+                            PaddingLeft = UDimNew(0, 8)
                         })
 
                         Instances:Create("UIListLayout", {
                             Parent = NewColumn.Instance,
                             Name = "\0",
-                            Padding = UDimNew(0, 15),
+                            Padding = UDimNew(0, 14),
                             SortOrder = Enum.SortOrder.LayoutOrder
                         })
 
@@ -6601,7 +6601,7 @@ local Library do
                 Items["Section"] = Instances:Create("Frame", {
                     Parent = Section.Page.ColumnsData[Section.Side].Instance,
                     Name = "\0",
-                    Size = UDim2New(1, 0, 0, 35),
+                    Size = UDim2New(1, 0, 0, 42),
                     BorderColor3 = FromRGB(0, 0, 0),
                     BorderSizePixel = 0,
                     AutomaticSize = Enum.AutomaticSize.Y,
@@ -6624,7 +6624,7 @@ local Library do
                     Text = Section.Name,
                     Size = UDim2New(0, 0, 0, 15),
                     BackgroundTransparency = 1,
-                    Position = UDim2New(0, 8, 0, 5),
+                    Position = UDim2New(0, 12, 0, 13),
                     BorderSizePixel = 0,
                     AutomaticSize = Enum.AutomaticSize.X,
                     TextSize = 14,
@@ -6642,7 +6642,7 @@ local Library do
                     AutoButtonColor = false,
                     BackgroundTransparency = 1,
                     Position = UDim2New(0, 0, 0, 0),
-                    Size = UDim2New(1, 0, 0, 35),
+                    Size = UDim2New(1, 0, 0, 42),
                     BorderSizePixel = 0,
                     ZIndex = 2,
                     TextSize = 14,
@@ -6657,7 +6657,7 @@ local Library do
                     AnchorPoint = Vector2New(0.5, 0.5),
                     Image = "rbxassetid://72579423244522",
                     BackgroundTransparency = 1,
-                    Position = UDim2New(1, -17, 0, 17),
+                    Position = UDim2New(1, -20, 0, 21),
                     Size = UDim2New(0, 16, 0, 16),
                     ZIndex = 3,
                     BorderSizePixel = 0,
@@ -6672,10 +6672,10 @@ local Library do
                     TextColor3 = FromRGB(255, 255, 255),
                     TextTransparency = 0.4000000059604645,
                     Text = Section.Description,
-                    Size = UDim2New(1, -16, 0, 15),
+                    Size = UDim2New(1, -24, 0, 15),
                     BorderSizePixel = 0,
                     BackgroundTransparency = 1,
-                    Position = UDim2New(0, 8, 0, 24),
+                    Position = UDim2New(0, 12, 0, 29),
                     BorderColor3 = FromRGB(0, 0, 0),
                     TextXAlignment = Enum.TextXAlignment.Left,
                     AutomaticSize = Enum.AutomaticSize.Y,
@@ -6688,7 +6688,7 @@ local Library do
                 Instances:Create("UIPadding", {
                     Parent = Items["Section"].Instance,
                     Name = "\0",
-                    PaddingBottom = UDimNew(0, 8)
+                    PaddingBottom = UDimNew(0, 14)
                 })
 
                 if Section.Premium then
@@ -6736,8 +6736,8 @@ local Library do
                     Name = "\0",
                     BorderColor3 = FromRGB(0, 0, 0),
                     BackgroundTransparency = 1,
-                    Position = UDim2New(0, 8, 0, Items["Description"].Instance.AbsoluteSize.Y + 30),
-                    Size = UDim2New(1, -16, 0, 0),
+                    Position = UDim2New(0, 12, 0, Items["Description"].Instance.AbsoluteSize.Y + 37),
+                    Size = UDim2New(1, -24, 0, 0),
                     BorderSizePixel = 0,
                     AutomaticSize = Enum.AutomaticSize.Y,
                     BackgroundColor3 = FromRGB(255, 255, 255)
@@ -6745,13 +6745,13 @@ local Library do
                 Items["Content"].Instance.Visible = false
 
                 if Section.Description == "" then
-                    Items["Content"].Instance.Position = UDim2New(0, 8, 0, 35)
+                    Items["Content"].Instance.Position = UDim2New(0, 12, 0, 42)
                 end
 
                 Instances:Create("UIListLayout", {
                     Parent = Items["Content"].Instance,
                     Name = "\0",
-                    Padding = UDimNew(0, 6),
+                    Padding = UDimNew(0, 11),
                     SortOrder = Enum.SortOrder.LayoutOrder
                 })
 
@@ -6769,12 +6769,12 @@ local Library do
                     Items["Content"].Instance.Visible = Section.IsOpen
 
                     if HasDescription then
-                        Items["Content"].Instance.Position = UDim2New(0, 8, 0, Items["Description"].Instance.AbsoluteSize.Y + 30)
+                        Items["Content"].Instance.Position = UDim2New(0, 12, 0, Items["Description"].Instance.AbsoluteSize.Y + 37)
                     else
-                        Items["Content"].Instance.Position = UDim2New(0, 8, 0, 35)
+                        Items["Content"].Instance.Position = UDim2New(0, 12, 0, 42)
                     end
 
-                    Items["Toggle"].Instance.Size = UDim2New(1, 0, 0, Section.IsOpen and Items["Content"].Instance.Position.Y.Offset or 35)
+                    Items["Toggle"].Instance.Size = UDim2New(1, 0, 0, Section.IsOpen and Items["Content"].Instance.Position.Y.Offset or 42)
 
                     if Section.Premium then
                         Items["IsPremium"].Instance.Visible = Section.IsOpen
@@ -6814,7 +6814,25 @@ local Library do
             return setmetatable(Section, Library.Sections)
         end
 
-        Library.Sections.AddToggle = function(self, Data)
+        Library.FitElementText = function(self, Items, Metrics)
+        local TextInstance = Items["Text"].Instance
+        local SubInstance = Items["SubElements"].Instance
+        TextInstance.AutomaticSize = Enum.AutomaticSize.None
+        TextInstance.TextXAlignment = Enum.TextXAlignment.Left
+        TextInstance.TextTruncate = Enum.TextTruncate.AtEnd
+        local function Update()
+            local Offset, Reserved = 0, 0
+            if Metrics then Offset, Reserved = Metrics() end
+            local SubWidth = SubInstance.AbsoluteSize.X
+            local Gap = SubWidth > 0 and 10 or 0
+            TextInstance.Size = UDim2New(1, -(Offset + Reserved + SubWidth + Gap), 0, TextInstance.Size.Y.Offset)
+        end
+        SubInstance:GetPropertyChangedSignal("AbsoluteSize"):Connect(Update)
+        if Metrics then TableInsert(self.ToggleStyleCallbacks, Update) end
+        Update()
+    end
+
+    Library.Sections.AddToggle = function(self, Data)
             Data = Data or {}
             local Toggle = {
                 Window = self.Window,
@@ -6845,7 +6863,7 @@ local Library do
                     Text = "",
                     AutoButtonColor = false,
                     BackgroundTransparency = 1,
-                    Size = UDim2New(1, 0, 0, 18),
+                    Size = UDim2New(1, 0, 0, 26),
                     BorderSizePixel = 0,
                     TextSize = 14,
                     BackgroundColor3 = FromRGB(255, 255, 255)
@@ -6983,6 +7001,13 @@ local Library do
                 Library:RegisterToggleStyleCallback(function() UpdateToggleVisuals() end)
             end
 
+            Library:FitElementText(Items, function()
+                local IsCheckbox = Library.ToggleStyle == "Checkbox"
+                local IsRight = Library.ToggleSide == "Right"
+                local IndicatorWidth = IsCheckbox and 18 or 32
+                return IsRight and 0 or (IsCheckbox and 26 or 40), IsRight and (IndicatorWidth + 6) or 0
+            end)
+
             Library.Elements[Toggle.Flag] = Toggle
 
             function Toggle:Get() return self.Value end
@@ -7087,7 +7112,7 @@ local Library do
                     Name = "\0",
                     BackgroundTransparency = 1,
                     BorderColor3 = FromRGB(0, 0, 0),
-                    Size = UDim2New(1, 0, 0, 25),
+                    Size = UDim2New(1, 0, 0, 32),
                     BorderSizePixel = 0,
                     BackgroundColor3 = FromRGB(255, 255, 255)
                 })
@@ -7209,7 +7234,7 @@ local Library do
                     Name = "\0",
                     BackgroundTransparency = 1,
                     BorderColor3 = FromRGB(0, 0, 0),
-                    Size = UDim2New(1, 0, 0, 28),
+                    Size = UDim2New(1, 0, 0, 42),
                     BorderSizePixel = 0,
                     BackgroundColor3 = FromRGB(255, 255, 255)
                 })
@@ -7240,7 +7265,7 @@ local Library do
                     AnchorPoint = Vector2New(0, 1),
                     Position = UDim2New(0, 0, 1, 0),
                     BorderColor3 = FromRGB(0, 0, 0),
-                    Size = UDim2New(1, 0, 0, 5),
+                    Size = UDim2New(1, 0, 0, 6),
                     BorderSizePixel = 0,
                     BackgroundColor3 = FromRGB(41, 40, 49)
                 })
@@ -7451,7 +7476,7 @@ local Library do
                     Name = "\0",
                     BackgroundTransparency = 1,
                     BorderColor3 = FromRGB(0, 0, 0),
-                    Size = UDim2New(1, 0, 0, 48),
+                    Size = UDim2New(1, 0, 0, 60),
                     BorderSizePixel = 0,
                     BackgroundColor3 = FromRGB(255, 255, 255)
                 })
@@ -7484,7 +7509,7 @@ local Library do
                     AutoButtonColor = false,
                     AnchorPoint = Vector2New(0, 1),
                     Position = UDim2New(0, 0, 1, 0),
-                    Size = UDim2New(1, 0, 0, 25),
+                    Size = UDim2New(1, 0, 0, 30),
                     BorderSizePixel = 0,
                     TextSize = 14,
                     BackgroundColor3 = FromRGB(41, 40, 49)
@@ -7543,7 +7568,7 @@ local Library do
                     Text = "",
                     AutoButtonColor = false,
                     Selectable = false,
-                    Position = UDim2New(0, 0, 1, 5),
+                    Position = UDim2New(0, 0, 1, 8),
                     Size = UDim2New(1, 0, 0, 125),
                     ZIndex = 2,
                     BorderSizePixel = 0,
@@ -8175,7 +8200,7 @@ local Library do
                     Name = "\0",
                     BackgroundTransparency = 1,
                     BorderColor3 = FromRGB(0, 0, 0),
-                    Size = UDim2New(1, 0, 0, 18),
+                    Size = UDim2New(1, 0, 0, 26),
                     BorderSizePixel = 0,
                     BackgroundColor3 = FromRGB(255, 255, 255)
                 })
@@ -8224,6 +8249,8 @@ local Library do
 
             function Label:SetVisibility(Bool) Items["Label"].Instance.Visible = Bool end
             function Label:Set(Text) Text = tostring(Text) Items["Text"].Instance.Text = Text end
+
+            Library:FitElementText(Items, nil)
 
             function Label:AddColorpicker(Data)
                 Data = Data or {}
@@ -8309,7 +8336,7 @@ local Library do
                     Name = "\0",
                     BackgroundTransparency = 1,
                     BorderColor3 = FromRGB(0, 0, 0),
-                    Size = UDim2New(1, 0, 0, 48),
+                    Size = UDim2New(1, 0, 0, 60),
                     BorderSizePixel = 0,
                     BackgroundColor3 = FromRGB(255, 255, 255)
                 })
@@ -8337,7 +8364,7 @@ local Library do
                     AnchorPoint = Vector2New(0, 1),
                     Position = UDim2New(0, 0, 1, 0),
                     BorderColor3 = FromRGB(0, 0, 0),
-                    Size = UDim2New(1, 0, 0, 25),
+                    Size = UDim2New(1, 0, 0, 30),
                     BorderSizePixel = 0,
                     BackgroundColor3 = FromRGB(41, 40, 49)
                 })
@@ -8456,7 +8483,7 @@ local Library do
                     Name = "\0",
                     BackgroundTransparency = 1,
                     BorderColor3 = FromRGB(0, 0, 0),
-                    Size = UDim2New(1, 0, 0, 18),
+                    Size = UDim2New(1, 0, 0, 26),
                     BorderSizePixel = 0,
                     BackgroundColor3 = FromRGB(255, 255, 255)
                 })
@@ -8500,6 +8527,8 @@ local Library do
                     SortOrder = Enum.SortOrder.LayoutOrder
                 })
             end
+
+            Library:FitElementText(Items, nil)
 
             Library.Elements[Colorpicker.Flag] = Colorpicker
 
@@ -8559,7 +8588,7 @@ local Library do
                     Text = "",
                     AutoButtonColor = false,
                     BackgroundTransparency = 1,
-                    Size = UDim2New(1, 0, 0, 18),
+                    Size = UDim2New(1, 0, 0, 26),
                     BorderSizePixel = 0,
                     TextSize = 14,
                     BackgroundColor3 = FromRGB(255, 255, 255)
@@ -8695,6 +8724,13 @@ local Library do
                 Library:RegisterToggleStyleCallback(function() UpdateToggleVisuals() end)
             end
 
+            Library:FitElementText(Items, function()
+                local IsCheckbox = Library.ToggleStyle == "Checkbox"
+                local IsRight = Library.ToggleSide == "Right"
+                local IndicatorWidth = IsCheckbox and 18 or 32
+                return IsRight and 0 or (IsCheckbox and 26 or 40), IsRight and (IndicatorWidth + 6) or 0
+            end)
+
             Library.Elements[Toggle.Flag] = Toggle
 
             local NewColorpicker, ColorpickerItems = Library:CreateColorpicker({
@@ -8751,7 +8787,7 @@ local Library do
                     Name = "\0",
                     BackgroundTransparency = 1,
                     BorderColor3 = FromRGB(0, 0, 0),
-                    Size = UDim2New(1, 0, 0, 15),
+                    Size = UDim2New(1, 0, 0, 24),
                     BorderSizePixel = 0,
                     BackgroundColor3 = FromRGB(255, 255, 255)
                 })
@@ -8847,7 +8883,7 @@ local Library do
                     TextTransparency = 0.4000000059604645,
                     Text = Paragraph.Description,
                     Size = UDim2New(1, -8, 0, 15),
-                    Position = UDim2New(0, 0, 0, 22),
+                    Position = UDim2New(0, 0, 0, 26),
                     TextWrapped = true,
                     BorderSizePixel = 0,
                     BackgroundTransparency = 1,
