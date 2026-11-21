@@ -5250,13 +5250,22 @@ local Library do
             }
             local Items = {}
 
+            local function GetAutoWindowMetrics()
+                local Viewport = Camera.ViewportSize
+                local Width = MathClamp(MathFloor(Viewport.X * 0.7), math.min(480, Viewport.X - 20), 730)
+                local Height = MathClamp(MathFloor(Viewport.Y * 0.9), math.min(300, Viewport.Y - 20), 530)
+                return Width, Height, MathFloor((Viewport.X - Width) / 2), MathFloor((Viewport.Y - Height) / 2)
+            end
+
+            local AutoWidth, AutoHeight, AutoX, AutoY = GetAutoWindowMetrics()
+
             do
                 Items["MainFrame"] = Instances:Create("Frame", {
                     Parent = Library.Holder.Instance,
                     Name = "\0",
-                    Position = UDim2New(0, Camera.ViewportSize.X / 3 - 100, 0, Camera.ViewportSize.Y / 3 - 100),
+                    Position = UDim2New(0, AutoX, 0, AutoY),
                     BorderColor3 = FromRGB(0, 0, 0),
-                    Size = IsMobile and UDim2New(0, 575, 0, 345) or UDim2New(0, 730, 0, 530),
+                    Size = UDim2New(0, AutoWidth, 0, AutoHeight),
                     ClipsDescendants = true,
                     Visible = false,
                     BorderSizePixel = 0,
@@ -5968,9 +5977,16 @@ local Library do
                         Items["MainFrame"]:Tween(nil, { Position = UDim2New(0, 0, 0, 0) })
                     else
                         Items["MainFrame"]:Tween(nil, { Size = UDim2New(0, OldSize.X, 0, OldSize.Y) })
-                        Items["MainFrame"]:Tween(nil, { Position = UDim2New(0, Camera.ViewportSize.X / 3 - 100, 0, Camera.ViewportSize.Y / 3 - 100) })
+                        Items["MainFrame"]:Tween(nil, { Position = UDim2New(0, MathFloor((Camera.ViewportSize.X - OldSize.X) / 2), 0, MathFloor((Camera.ViewportSize.Y - OldSize.Y) / 2)) })
                     end
                 end
+            end)
+
+            Library:Connect(Camera:GetPropertyChangedSignal("ViewportSize"), function()
+                if IsFullScreen or Window.IsMinimized then return end
+                local Width, Height, X, Y = GetAutoWindowMetrics()
+                OldSize = Vector2New(Width, Height)
+                Items["MainFrame"]:Tween(nil, { Size = UDim2New(0, Width, 0, Height), Position = UDim2New(0, X, 0, Y) })
             end)
 
             Library.NotificationIcon = Window.Logo
