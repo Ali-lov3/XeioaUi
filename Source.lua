@@ -4655,6 +4655,7 @@ local Library do
 
             local Window = {
                 Name = Data.Name or Data.name or "Window",
+                Logo = Data.Logo or Data.logo or "77434646025119",
                 CloseCallback = Data.CloseCallback or Data.closecallback or function() end,
                 PremiumRequired = PremiumRequired == true,
                 TrialActive = TrialActive == true,
@@ -4740,9 +4741,9 @@ local Library do
                     TextColor3 = FromRGB(255, 255, 255),
                     BorderColor3 = FromRGB(0, 0, 0),
                     Text = Window.Name,
-                    Size = UDim2New(1, -115, 0, 25),
+                    Size = UDim2New(1, -153, 0, 25),
                     AnchorPoint = Vector2New(0, 0.5),
-                    Position = UDim2New(0, 12, 0.5, 0),
+                    Position = UDim2New(0, 50, 0.5, 0),
                     BackgroundTransparency = 1,
                     TextXAlignment = Enum.TextXAlignment.Left,
                     BorderSizePixel = 0,
@@ -4752,6 +4753,20 @@ local Library do
                     BackgroundColor3 = FromRGB(255, 255, 255)
                 })
                 Items["Title"]:AddToTheme({ TextColor3 = "Text" })
+
+                Items["Logo"] = Instances:Create("ImageLabel", {
+                    Parent = Items["Top"].Instance,
+                    Name = "\0",
+                    BackgroundTransparency = 1,
+                    BorderColor3 = FromRGB(0, 0, 0),
+                    BorderSizePixel = 0,
+                    Image = tostring(Window.Logo):match("^%d+$") and ("rbxassetid://" .. tostring(Window.Logo)) or tostring(Window.Logo),
+                    ScaleType = Enum.ScaleType.Fit,
+                    AnchorPoint = Vector2New(0, 0.5),
+                    Position = UDim2New(0, 12, 0.5, 0),
+                    Size = UDim2New(0, 30, 0, 30),
+                    ZIndex = 3
+                })
 
                 Instances:Create("UIGradient", {
                     Parent = Items["Fade"].Instance,
@@ -5333,7 +5348,7 @@ local Library do
 
                 if Window.IsMinimized then
                     OldSize = Items["MainFrame"].Instance.AbsoluteSize
-                    Items["MainFrame"]:Tween(nil, { Size = UDim2New(0, Items["Title"].Instance.TextBounds.X + 125, 0, 45) })
+                    Items["MainFrame"]:Tween(nil, { Size = UDim2New(0, Items["Title"].Instance.TextBounds.X + 163, 0, 45) })
                     Window.ResizeButton:Tween(nil, { ImageTransparency = 1 })
                     Window.ResizeButton.Instance.Interactable = false
                     Window.ResizeHandle.Instance.Visible = false
@@ -5658,8 +5673,8 @@ local Library do
                     BorderColor3 = FromRGB(0, 0, 0),
                     AnchorPoint = Vector2New(0.5, 1),
                     BackgroundTransparency = 1,
-                    Position = UDim2New(0.5, 2, 1, 6),
-                    Size = UDim2New(0, 0, 0, 8),
+                    Position = UDim2New(0.5, 4, 1, -4),
+                    Size = UDim2New(0, 0, 0, 3),
                     BorderSizePixel = 0,
                     BackgroundColor3 = FromRGB(246, 178, 255)
                 })
@@ -5668,6 +5683,16 @@ local Library do
                     Parent = Items["Liner"].Instance,
                     Name = "\0",
                     CornerRadius = UDimNew(1, 0)
+                })
+                Instances:Create("UIGradient", {
+                    Parent = Items["Liner"].Instance,
+                    Name = "\0",
+                    Transparency = NumSequence{
+                        NumSequenceKeypoint(0, 0.75),
+                        NumSequenceKeypoint(0.3, 0),
+                        NumSequenceKeypoint(0.7, 0),
+                        NumSequenceKeypoint(1, 0.75)
+                    }
                 })
 
                 Items["Page"] = Instances:Create("Frame", {
@@ -5834,13 +5859,13 @@ local Library do
                 if Bool then
                     Items["Text"]:Tween(nil, { TextTransparency = 0 })
                     Items["Inactive"]:Tween(nil, { BackgroundTransparency = 0 })
-                    Items["Liner"]:Tween(TweenInfo.new(Library.Tween.Time, Enum.EasingStyle.Back, Enum.EasingDirection.Out), { BackgroundTransparency = 0, Size = UDim2New(1, -25, 0, 8) })
+                    Items["Liner"]:Tween(TweenInfo.new(Library.Tween.Time + 0.1, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), { BackgroundTransparency = 0, Size = UDim2New(1, 0, 0, 3) })
                     Items["Page"]:Tween(TweenInfo.new(0.6, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), { Position = UDim2New(0, 0, 0, 0) })
                     for Index, Value in Library.OpenFrames do Value:SetOpen(false) end
                 else
                     Items["Text"]:Tween(nil, { TextTransparency = 0.4 })
                     Items["Inactive"]:Tween(nil, { BackgroundTransparency = 1 })
-                    Items["Liner"]:Tween(TweenInfo.new(Library.Tween.Time, Enum.EasingStyle.Back, Enum.EasingDirection.Out), { BackgroundTransparency = 1, Size = UDim2New(0, 0, 0, 8) })
+                    Items["Liner"]:Tween(TweenInfo.new(Library.Tween.Time, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), { BackgroundTransparency = 1, Size = UDim2New(0, 0, 0, 3) })
                     Items["Page"]:Tween(TweenInfo.new(0.6, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), { Position = UDim2New(0, 0, 0, 35) })
                     for Index, Value in Library.OpenFrames do Value:SetOpen(false) end
                 end

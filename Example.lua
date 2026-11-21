@@ -2,6 +2,7 @@ local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/Ali-l
 
 local Window = Library:MakeWindow({
     Name = "Title",
+    Logo = "77434646025119",
     HomeTab = false,
     DiscordLink = "discord.gg/example"
 })
