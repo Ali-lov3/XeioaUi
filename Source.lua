@@ -5559,7 +5559,7 @@ local Library do
                     BackgroundTransparency = 1,
                     Position = UDim2New(0, 0, 0, 45),
                     BorderColor3 = FromRGB(0, 0, 0),
-                    Size = UDim2New(0, 150, 1, -45),
+                    Size = UDim2New(0, 118, 1, -45),
                     BorderSizePixel = 0,
                     BackgroundColor3 = FromRGB(255, 255, 255)
                 })
@@ -5579,9 +5579,9 @@ local Library do
                     Parent = Items["Side"].Instance,
                     Name = "\0",
                     AnchorPoint = Vector2New(0, 1),
-                    Position = UDim2New(0, 8, 1, -8),
+                    Position = UDim2New(0, 6, 1, -6),
                     BorderColor3 = FromRGB(0, 0, 0),
-                    Size = UDim2New(1, -16, 0, 55),
+                    Size = UDim2New(1, -12, 0, 42),
                     BorderSizePixel = 0,
                     BackgroundColor3 = FromRGB(26, 25, 31)
                 })
@@ -5599,8 +5599,8 @@ local Library do
                     AnchorPoint = Vector2New(0, 0.5),
                     Image = "",
                     BackgroundTransparency = 1,
-                    Position = UDim2New(0, 8, 0.5, 0),
-                    Size = UDim2New(0, 32, 0, 32),
+                    Position = UDim2New(0, 6, 0.5, 0),
+                    Size = UDim2New(0, 26, 0, 26),
                     BorderSizePixel = 0,
                     BackgroundColor3 = FromRGB(255, 255, 255)
                 })
@@ -5614,11 +5614,11 @@ local Library do
                     TextColor3 = FromRGB(255, 255, 255),
                     BorderColor3 = FromRGB(0, 0, 0),
                     Text = LocalPlayer.Name,
-                    Size = UDim2New(1, -52, 0, 15),
+                    Size = UDim2New(1, -40, 0, 13),
                     BackgroundTransparency = 1,
-                    Position = UDim2New(0, 46, 0, 10),
+                    Position = UDim2New(0, 36, 0, 8),
                     BorderSizePixel = 0,
-                    TextSize = 14,
+                    TextSize = 12,
                     TextXAlignment = Enum.TextXAlignment.Left,
                     BackgroundColor3 = FromRGB(255, 255, 255),
                     TextTruncate = Enum.TextTruncate.AtEnd
@@ -5633,13 +5633,13 @@ local Library do
                     TextColor3 = FromRGB(255, 255, 255),
                     TextTransparency = 0.4000000059604645,
                     Text = ResolvePlaceName(),
-                    Size = UDim2New(1, -52, 0, 15),
+                    Size = UDim2New(1, -40, 0, 13),
                     BorderSizePixel = 0,
                     BackgroundTransparency = 1,
-                    Position = UDim2New(0, 46, 0, 28),
+                    Position = UDim2New(0, 36, 0, 23),
                     BorderColor3 = FromRGB(0, 0, 0),
                     TextTruncate = Enum.TextTruncate.AtEnd,
-                    TextSize = 12,
+                    TextSize = 10,
                     BackgroundColor3 = FromRGB(255, 255, 255)
                 })
                 Items["Game"]:AddToTheme({ TextColor3 = "Text" })
@@ -5654,9 +5654,9 @@ local Library do
                     Parent = Items["Side"].Instance,
                     Name = "\0",
                     BackgroundTransparency = 1,
-                    Position = UDim2New(0, 8, 0, 8),
+                    Position = UDim2New(0, 6, 0, 6),
                     BorderColor3 = FromRGB(0, 0, 0),
-                    Size = UDim2New(1, -16, 1, -75),
+                    Size = UDim2New(1, -12, 1, -58),
                     CanvasSize = UDim2New(0, 0, 0, 0),
                     AutomaticCanvasSize = Enum.AutomaticSize.Y,
                     MidImage = "rbxassetid://136419474381965",
@@ -5686,9 +5686,9 @@ local Library do
                     Parent = Items["MainFrame"].Instance,
                     Name = "\0",
                     BackgroundTransparency = 1,
-                    Position = UDim2New(0, 150, 0, 45),
+                    Position = UDim2New(0, 118, 0, 45),
                     BorderColor3 = FromRGB(0, 0, 0),
-                    Size = UDim2New(1, -150, 1, -45),
+                    Size = UDim2New(1, -118, 1, -45),
                     BorderSizePixel = 0,
                     BackgroundColor3 = FromRGB(255, 255, 255)
                 })
@@ -6019,7 +6019,7 @@ local Library do
                     Text = "",
                     AutoButtonColor = false,
                     BackgroundTransparency = 1,
-                    Size = UDim2New(1, 0, 0, 35),
+                    Size = UDim2New(1, 0, 0, 30),
                     BorderSizePixel = 0,
                     TextSize = 14,
                     BackgroundColor3 = FromRGB(255, 255, 255)
@@ -6053,10 +6053,10 @@ local Library do
                     AnchorPoint = Vector2New(0, 0.5),
                     BorderSizePixel = 0,
                     BackgroundTransparency = 1,
-                    Position = UDim2New(0, Page.Icon and 38 or 16, 0.5, 0),
+                    Position = UDim2New(0, Page.Icon and 30 or 12, 0.5, 0),
                     BorderColor3 = FromRGB(0, 0, 0),
                     AutomaticSize = Enum.AutomaticSize.X,
-                    TextSize = 18,
+                    TextSize = 15,
                     BackgroundColor3 = FromRGB(255, 255, 255)
                 })
                 Items["Text"]:AddToTheme({ TextColor3 = "Text" })
@@ -6069,8 +6069,8 @@ local Library do
                         BorderColor3 = FromRGB(0, 0, 0),
                         AnchorPoint = Vector2New(0, 0.5),
                         BackgroundTransparency = 1,
-                        Position = UDim2New(0, 14, 0.5, 0),
-                        Size = UDim2New(0, 16, 0, 16),
+                        Position = UDim2New(0, 10, 0.5, 0),
+                        Size = UDim2New(0, 14, 0, 14),
                         BorderSizePixel = 0,
                         BackgroundColor3 = FromRGB(255, 255, 255)
                     })
@@ -6145,7 +6145,7 @@ local Library do
 
                 if Page.Active then
                     Items["Text"]:Tween(nil, { TextTransparency = 0 })
-                    Items["Line"]:Tween(nil, { Size = UDim2New(0, 3, 0, 18) })
+                    Items["Line"]:Tween(nil, { Size = UDim2New(0, 3, 0, 16) })
                     if Page.Icon then
                         Items["Icon"]:ChangeItemTheme({ ImageColor3 = "Accent" })
                         Items["Icon"]:Tween(nil, { ImageColor3 = Library.Theme.Accent, ImageTransparency = 0 })
