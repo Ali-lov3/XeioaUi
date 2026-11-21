@@ -6851,9 +6851,15 @@ local Library do
                 })
                 Items["Input"]:AddToTheme({ TextColor3 = "Text" })
 
-                Items["Columns"] = Instances:Create("Frame", {
+                Items["Columns"] = Instances:Create("ScrollingFrame", {
                     Parent = Items["Page"].Instance,
                     Name = "\0",
+                    ScrollBarImageColor3 = FromRGB(0, 0, 0),
+                    Active = true,
+                    AutomaticCanvasSize = Enum.AutomaticSize.Y,
+                    CanvasSize = UDim2New(0, 0, 0, 0),
+                    ScrollingDirection = Enum.ScrollingDirection.Y,
+                    ScrollBarThickness = 0,
                     BackgroundTransparency = 1,
                     Size = UDim2New(1, 0, 1, -(IsMobile and 40 or 44)),
                     BorderColor3 = FromRGB(0, 0, 0),
@@ -6864,26 +6870,42 @@ local Library do
                 Instances:Create("UIListLayout", {
                     Parent = Items["Columns"].Instance,
                     Name = "\0",
+                    FillDirection = Enum.FillDirection.Vertical,
+                    Padding = UDimNew(0, 0),
+                    SortOrder = Enum.SortOrder.LayoutOrder
+                })
+
+                Items["Row"] = Instances:Create("Frame", {
+                    Parent = Items["Columns"].Instance,
+                    Name = "\0",
+                    BackgroundTransparency = 1,
+                    AutomaticSize = Enum.AutomaticSize.Y,
+                    Size = UDim2New(1, 0, 0, 0),
+                    BorderColor3 = FromRGB(0, 0, 0),
+                    BorderSizePixel = 0,
+                    BackgroundColor3 = FromRGB(255, 255, 255)
+                })
+
+                Instances:Create("UIListLayout", {
+                    Parent = Items["Row"].Instance,
+                    Name = "\0",
                     FillDirection = Enum.FillDirection.Horizontal,
                     HorizontalFlex = Enum.UIFlexAlignment.Fill,
+                    VerticalAlignment = Enum.VerticalAlignment.Top,
                     Padding = UDimNew(0, 8),
                     SortOrder = Enum.SortOrder.LayoutOrder
                 })
 
                 for Index = 1, Page.Columns do
-                    local NewColumn = Instances:Create("ScrollingFrame", {
-                        Parent = Items["Columns"].Instance,
+                    local NewColumn = Instances:Create("Frame", {
+                        Parent = Items["Row"].Instance,
                         Name = "\0",
-                        ScrollBarImageColor3 = FromRGB(0, 0, 0),
-                        Active = true,
-                        AutomaticCanvasSize = Enum.AutomaticSize.Y,
-                        ScrollBarThickness = 0,
+                        AutomaticSize = Enum.AutomaticSize.Y,
                         BackgroundTransparency = 1,
-                        Size = UDim2New(1, 0, 1, 0),
+                        Size = UDim2New(1, 0, 0, 0),
                         BackgroundColor3 = FromRGB(255, 255, 255),
                         BorderColor3 = FromRGB(0, 0, 0),
-                        BorderSizePixel = 0,
-                        CanvasSize = UDim2New(0, 0, 0, 0)
+                        BorderSizePixel = 0
                     })
 
                     Instances:Create("UIPadding", {
@@ -7265,16 +7287,14 @@ local Library do
 
                 local CardHeight = Config.Height or 76
                 local Holder = Instances:Create("Frame", {
-                    Parent = HomeSubTab.Items["Page"].Instance,
+                    Parent = HomeSubTab.Items["Columns"].Instance,
                     Name = "\0",
                     LayoutOrder = -1,
                     BackgroundTransparency = 1,
                     BorderSizePixel = 0,
-                    Size = UDim2New(1, 0, 0, CardHeight + 8)
+                    Size = UDim2New(1, 0, 0, CardHeight)
                 })
                 DiscordState.Holder = Holder
-
-                HomeSubTab.Items["Columns"].Instance.Size = UDim2New(1, 0, 1, -(CardHeight + 16))
 
                 local Card = MakeCard(Holder.Instance, CardHeight)
                 Card.Instance.Position = UDim2New(0, 8, 0, 8)
@@ -7431,6 +7451,12 @@ local Library do
             }
             Playerlist.Page.Items["Searchbar"].Instance.Visible = false
             Playerlist.Page.Items["Columns"].Instance.Size = UDim2New(1, 0, 1, 0)
+            Playerlist.Page.Items["Columns"].Instance.ScrollingEnabled = false
+            Playerlist.Page.Items["Columns"].Instance.AutomaticCanvasSize = Enum.AutomaticSize.None
+            Playerlist.Page.Items["Row"].Instance.AutomaticSize = Enum.AutomaticSize.None
+            Playerlist.Page.Items["Row"].Instance.Size = UDim2New(1, 0, 1, 0)
+            Playerlist.Page.ColumnsData[1].Instance.AutomaticSize = Enum.AutomaticSize.None
+            Playerlist.Page.ColumnsData[1].Instance.Size = UDim2New(1, 0, 1, 0)
 
             if Playerlist.Page.Columns ~= 1 then
                 error("Playerlist can only be in one column (Edit Columns property to 1)")
