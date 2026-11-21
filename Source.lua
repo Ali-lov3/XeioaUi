@@ -4570,15 +4570,16 @@ local Library do
 
         Widgets.MainFrame = Instances:Create("Frame", {
             Parent = Widgets.MainGui.Instance,
-            BackgroundColor3 = Color3.fromRGB(20, 20, 20),
+            BackgroundColor3 = Library.Theme.Background,
             BorderSizePixel = 0,
             Position = UDim2New(0.5, -25, 0, 30),
             Size = UDim2New(0, 50, 0, 50),
             Visible = CheckSetting("ShowButton")
         })
+        Widgets.MainFrame:AddToTheme({ BackgroundColor3 = "Background" })
 
         Widgets.FrameScale = Instances:Create("UIScale", { Parent = Widgets.MainFrame.Instance })
-        Instances:Create("UICorner", { Parent = Widgets.MainFrame.Instance, CornerRadius = UDimNew(0, 25) })
+        Instances:Create("UICorner", { Parent = Widgets.MainFrame.Instance, CornerRadius = UDimNew(1, 0) })
 
         Widgets.ImageLabel = Instances:Create("ImageLabel", {
             Parent = Widgets.MainFrame.Instance,
@@ -4588,11 +4589,13 @@ local Library do
 
         Widgets.ImageStroke = Instances:Create("UIStroke", {
             Parent = Widgets.ImageLabel.Instance,
-            Color = Color3.fromRGB(45, 135, 255),
-            Thickness = 1
+            Color = Library.Theme.Accent,
+            Thickness = 1.25,
+            ApplyStrokeMode = Enum.ApplyStrokeMode.Border
         })
+        Widgets.ImageStroke:AddToTheme({ Color = "Accent" })
 
-        Instances:Create("UICorner", { Parent = Widgets.ImageLabel.Instance, CornerRadius = UDimNew(0, 10) })
+        Instances:Create("UICorner", { Parent = Widgets.ImageLabel.Instance, CornerRadius = UDimNew(1, 0) })
 
         Widgets.MainButton = Instances:Create("TextButton", {
             Parent = Widgets.ImageLabel.Instance,
@@ -6020,11 +6023,12 @@ local Library do
                 Items["Highlight"] = Instances:Create("Frame", {
                     Parent = Items["Inactive"].Instance,
                     Name = "\0",
-                    BackgroundColor3 = FromRGB(255, 255, 255),
+                    BackgroundColor3 = Library.Theme.Accent,
                     BackgroundTransparency = 1,
                     BorderSizePixel = 0,
                     Size = UDim2New(1, 0, 1, 0)
                 })
+                Items["Highlight"]:AddToTheme({ BackgroundColor3 = "Accent" })
 
                 Instances:Create("UICorner", {
                     Parent = Items["Highlight"].Instance,
@@ -6032,19 +6036,11 @@ local Library do
                     CornerRadius = UDimNew(0, 6)
                 })
 
-                Instances:Create("UIGradient", {
-                    Parent = Items["Highlight"].Instance,
-                    Name = "\0",
-                    Rotation = 0,
-                    Color = RGBSequence{ RGBSequenceKeypoint(0, Library.Theme.Accent), RGBSequenceKeypoint(1, Library.Theme.Accent) },
-                    Transparency = NumSequence{ NumSequenceKeypoint(0, 0.3), NumSequenceKeypoint(1, 1) }
-                }):AddToTheme({ Color = function() return RGBSequence{ RGBSequenceKeypoint(0, Library.Theme.Accent), RGBSequenceKeypoint(1, Library.Theme.Accent) } end })
-
                 Items["Line"] = Instances:Create("Frame", {
                     Parent = Items["Inactive"].Instance,
                     Name = "\0",
                     AnchorPoint = Vector2New(0, 0.5),
-                    Position = UDim2New(0, 0, 0.5, 0),
+                    Position = UDim2New(0, 4, 0.5, 0),
                     Size = UDim2New(0, 3, 0, 0),
                     BorderSizePixel = 0,
                     BackgroundColor3 = Library.Theme.Accent
@@ -6160,7 +6156,7 @@ local Library do
 
                 if Page.Active then
                     Items["Text"]:Tween(nil, { TextTransparency = 0 })
-                    Items["Highlight"]:Tween(nil, { BackgroundTransparency = 0 })
+                    Items["Highlight"]:Tween(nil, { BackgroundTransparency = 0.85 })
                     Items["Line"]:Tween(nil, { Size = UDim2New(0, 3, 0, 18) })
                     if Page.Icon then
                         Items["Icon"]:ChangeItemTheme({ ImageColor3 = "Accent" })
