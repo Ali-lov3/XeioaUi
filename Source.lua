@@ -2563,6 +2563,468 @@ local Library do
         end)
     end
 
+    Library.MakeLoadingScreen = function(self, Data)
+        Data = Data or {}
+        if Library.ActiveLoadingScreen then
+            pcall(function() Library.ActiveLoadingScreen:Close() end)
+        end
+
+        local LoadingScreen = {
+            Title = Data.Title or Data.Name or "Loading",
+            Text = Data.Text or Data.Content or "Loading...",
+            Logo = Data.Logo or Data.logo or "77434646025119",
+            Duration = Data.Duration or Data.Time or 3,
+            Steps = Data.Steps or {},
+            Callback = Data.Callback or function() end,
+            Closed = false
+        }
+        local Items = {}
+
+        do
+            Items["Gui"] = Instances:Create("ScreenGui", {
+                Parent = gethui(),
+                Name = "\0",
+                ZIndexBehavior = Enum.ZIndexBehavior.Sibling,
+                DisplayOrder = 100,
+                IgnoreGuiInset = true,
+                ResetOnSpawn = false
+            })
+
+            Items["Background"] = Instances:Create("Frame", {
+                Parent = Items["Gui"].Instance,
+                Name = "\0",
+                Active = true,
+                BorderSizePixel = 0,
+                Size = UDim2New(1, 0, 1, 0),
+                BackgroundColor3 = FromRGB(17, 16, 20)
+            })
+            Items["Background"]:AddToTheme({ BackgroundColor3 = "Background" })
+
+            Items["Content"] = Instances:Create("Frame", {
+                Parent = Items["Background"].Instance,
+                Name = "\0",
+                AnchorPoint = Vector2New(0.5, 0.5),
+                Position = UDim2New(0.5, 0, 0.5, 0),
+                Size = UDim2New(0, 280, 0, 0),
+                AutomaticSize = Enum.AutomaticSize.Y,
+                BackgroundTransparency = 1,
+                BorderSizePixel = 0
+            })
+
+            Instances:Create("UIListLayout", {
+                Parent = Items["Content"].Instance,
+                Name = "\0",
+                Padding = UDimNew(0, 10),
+                SortOrder = Enum.SortOrder.LayoutOrder,
+                HorizontalAlignment = Enum.HorizontalAlignment.Center
+            })
+
+            Items["Logo"] = Instances:Create("ImageLabel", {
+                Parent = Items["Content"].Instance,
+                Name = "\0",
+                LayoutOrder = 1,
+                BackgroundTransparency = 1,
+                BorderSizePixel = 0,
+                ScaleType = Enum.ScaleType.Fit,
+                Size = UDim2New(0, 72, 0, 72)
+            })
+            Library.ApplyIcon(Items["Logo"].Instance, LoadingScreen.Logo)
+
+            Items["Title"] = Instances:Create("TextLabel", {
+                Parent = Items["Content"].Instance,
+                Name = "\0",
+                LayoutOrder = 2,
+                FontFace = Library.Font,
+                TextColor3 = FromRGB(255, 255, 255),
+                Text = LoadingScreen.Title,
+                TextSize = 24,
+                Size = UDim2New(1, 0, 0, 28),
+                BackgroundTransparency = 1,
+                BorderSizePixel = 0
+            })
+            Items["Title"]:AddToTheme({ TextColor3 = "Text" })
+
+            Items["Status"] = Instances:Create("TextLabel", {
+                Parent = Items["Content"].Instance,
+                Name = "\0",
+                LayoutOrder = 3,
+                FontFace = Library.Font,
+                TextColor3 = FromRGB(255, 255, 255),
+                TextTransparency = 0.4,
+                Text = LoadingScreen.Text,
+                TextSize = 14,
+                Size = UDim2New(1, 0, 0, 16),
+                BackgroundTransparency = 1,
+                BorderSizePixel = 0
+            })
+            Items["Status"]:AddToTheme({ TextColor3 = "Text" })
+
+            Items["Track"] = Instances:Create("Frame", {
+                Parent = Items["Content"].Instance,
+                Name = "\0",
+                LayoutOrder = 4,
+                ClipsDescendants = true,
+                BorderSizePixel = 0,
+                Size = UDim2New(1, 0, 0, 6),
+                BackgroundColor3 = FromRGB(41, 40, 49)
+            })
+            Items["Track"]:AddToTheme({ BackgroundColor3 = "Element" })
+
+            Instances:Create("UICorner", {
+                Parent = Items["Track"].Instance,
+                Name = "\0",
+                CornerRadius = UDimNew(1, 0)
+            })
+
+            Items["Fill"] = Instances:Create("Frame", {
+                Parent = Items["Track"].Instance,
+                Name = "\0",
+                BorderSizePixel = 0,
+                Size = UDim2New(0, 0, 1, 0),
+                BackgroundColor3 = FromRGB(255, 255, 255)
+            })
+
+            Instances:Create("UICorner", {
+                Parent = Items["Fill"].Instance,
+                Name = "\0",
+                CornerRadius = UDimNew(1, 0)
+            })
+
+            Instances:Create("UIGradient", {
+                Parent = Items["Fill"].Instance,
+                Name = "\0",
+                Rotation = 0,
+                Color = RGBSequence{ RGBSequenceKeypoint(0, Library.Theme.Accent), RGBSequenceKeypoint(1, FromRGB(0, 0, 0)) }
+            }):AddToTheme({ Color = function() return RGBSequence{ RGBSequenceKeypoint(0, Library.Theme.Accent), RGBSequenceKeypoint(1, FromRGB(0, 0, 0)) } end })
+
+            Items["Percent"] = Instances:Create("TextLabel", {
+                Parent = Items["Content"].Instance,
+                Name = "\0",
+                LayoutOrder = 5,
+                FontFace = Library.Subfont,
+                TextColor3 = FromRGB(255, 255, 255),
+                TextTransparency = 0.5,
+                Text = "0%",
+                TextSize = 12,
+                Size = UDim2New(1, 0, 0, 14),
+                BackgroundTransparency = 1,
+                BorderSizePixel = 0
+            })
+            Items["Percent"]:AddToTheme({ TextColor3 = "Text" })
+        end
+
+        local FadeList = { Items["Background"].Instance }
+        for _, Value in Items["Background"].Instance:GetDescendants() do TableInsert(FadeList, Value) end
+
+        local Targets = {}
+        for _, Value in FadeList do
+            local Properties = Tween:GetProperty(Value)
+            if Properties then
+                Targets[Value] = {}
+                for _, Property in Properties do
+                    Targets[Value][Property] = Value[Property]
+                    Value[Property] = 1
+                end
+            end
+        end
+
+        for Value, Goal in Targets do
+            TweenService:Create(Value, TweenInfo.new(0.35, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), Goal):Play()
+        end
+
+        function LoadingScreen:SetText(Text)
+            self.Text = tostring(Text)
+            Items["Status"].Instance.Text = self.Text
+        end
+
+        function LoadingScreen:Close()
+            self.Closed = true
+        end
+
+        local function IsAlive()
+            return Items["Gui"].Instance.Parent ~= nil
+        end
+
+        local function Run()
+            task.wait(0.4)
+            local Start = tick()
+            local LastStep = 0
+
+            while not LoadingScreen.Closed do
+                if not IsAlive() then return end
+                local Alpha = MathClamp((tick() - Start) / LoadingScreen.Duration, 0, 1)
+                local Eased = 1 - (1 - Alpha) ^ 2
+                Items["Fill"].Instance.Size = UDim2New(Eased, 0, 1, 0)
+                Items["Percent"].Instance.Text = MathFloor(Eased * 100) .. "%"
+
+                if #LoadingScreen.Steps > 0 then
+                    local Step = math.min(#LoadingScreen.Steps, MathFloor(Alpha * #LoadingScreen.Steps) + 1)
+                    if Step ~= LastStep then
+                        LastStep = Step
+                        LoadingScreen:SetText(LoadingScreen.Steps[Step])
+                    end
+                end
+
+                if Alpha >= 1 then break end
+                task.wait()
+            end
+
+            if not IsAlive() then return end
+            Items["Fill"].Instance.Size = UDim2New(1, 0, 1, 0)
+            Items["Percent"].Instance.Text = "100%"
+            task.wait(0.25)
+
+            for _, Value in FadeList do
+                local Properties = Tween:GetProperty(Value)
+                if Properties then
+                    for _, Property in Properties do
+                        TweenService:Create(Value, TweenInfo.new(0.4, Enum.EasingStyle.Quad, Enum.EasingDirection.In), { [Property] = 1 }):Play()
+                    end
+                end
+            end
+
+            task.wait(0.45)
+            if not IsAlive() or not Library then return end
+            Library.ActiveLoadingScreen = nil
+            Items["Gui"]:Clean()
+            Library:SafeCall(LoadingScreen.Callback)
+        end
+
+        Library.ActiveLoadingScreen = LoadingScreen
+        Library:RegisterCleanupCallback(function()
+            if Items["Gui"] and Items["Gui"].Instance then Items["Gui"]:Clean() end
+        end)
+
+        if Data.Wait == false then
+            task.spawn(Run)
+        else
+            Run()
+        end
+
+        return LoadingScreen
+    end
+
+    Library.MakeWatermark = function(self, Data)
+        Data = Data or {}
+        if Library.ActiveWatermark then
+            pcall(function() Library.ActiveWatermark:Destroy() end)
+        end
+
+        local Watermark = {
+            Title = Data.Title or Data.Name or "Watermark",
+            Text = Data.Text or Data.Custom or "",
+            Logo = Data.Logo or Data.logo or "77434646025119",
+            ShowFPS = Data.ShowFPS ~= false,
+            ShowPing = Data.ShowPing ~= false,
+            Visible = Data.Visible ~= false,
+            FPS = "0",
+            Ping = 0,
+            Destroyed = false
+        }
+        local Items = {}
+
+        local function Escape(Text)
+            return (tostring(Text):gsub("&", "&amp;"):gsub("<", "&lt;"):gsub(">", "&gt;"))
+        end
+
+        do
+            Items["Gui"] = Instances:Create("ScreenGui", {
+                Parent = gethui(),
+                Name = "\0",
+                ZIndexBehavior = Enum.ZIndexBehavior.Sibling,
+                DisplayOrder = 3,
+                ResetOnSpawn = false
+            })
+
+            Items["Frame"] = Instances:Create("Frame", {
+                Parent = Items["Gui"].Instance,
+                Name = "\0",
+                Position = Data.Position or UDim2New(0, 12, 0, 12),
+                Size = UDim2New(0, 0, 0, 30),
+                AutomaticSize = Enum.AutomaticSize.X,
+                ClipsDescendants = true,
+                BackgroundTransparency = 0.1,
+                BorderSizePixel = 0,
+                Visible = Watermark.Visible,
+                BackgroundColor3 = FromRGB(17, 16, 20)
+            })
+            Items["Frame"]:AddToTheme({ BackgroundColor3 = "Background" })
+
+            Instances:Create("UICorner", {
+                Parent = Items["Frame"].Instance,
+                Name = "\0",
+                CornerRadius = UDimNew(0, 6)
+            })
+
+            Items["Stroke"] = Instances:Create("UIStroke", {
+                Parent = Items["Frame"].Instance,
+                Name = "\0",
+                Color = FromRGB(36, 33, 42),
+                ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+            })
+            Items["Stroke"]:AddToTheme({ Color = "Border" })
+
+            Items["Row"] = Instances:Create("Frame", {
+                Parent = Items["Frame"].Instance,
+                Name = "\0",
+                Size = UDim2New(0, 0, 1, 0),
+                AutomaticSize = Enum.AutomaticSize.X,
+                BackgroundTransparency = 1,
+                BorderSizePixel = 0
+            })
+
+            Instances:Create("UIListLayout", {
+                Parent = Items["Row"].Instance,
+                Name = "\0",
+                Padding = UDimNew(0, 8),
+                FillDirection = Enum.FillDirection.Horizontal,
+                SortOrder = Enum.SortOrder.LayoutOrder,
+                VerticalAlignment = Enum.VerticalAlignment.Center
+            })
+
+            Instances:Create("UIPadding", {
+                Parent = Items["Row"].Instance,
+                Name = "\0",
+                PaddingLeft = UDimNew(0, 8),
+                PaddingRight = UDimNew(0, 10)
+            })
+
+            Items["Logo"] = Instances:Create("ImageLabel", {
+                Parent = Items["Row"].Instance,
+                Name = "\0",
+                LayoutOrder = 1,
+                BackgroundTransparency = 1,
+                BorderSizePixel = 0,
+                ScaleType = Enum.ScaleType.Fit,
+                Size = UDim2New(0, 18, 0, 18)
+            })
+            Library.ApplyIcon(Items["Logo"].Instance, Watermark.Logo)
+
+            Items["Title"] = Instances:Create("TextLabel", {
+                Parent = Items["Row"].Instance,
+                Name = "\0",
+                LayoutOrder = 2,
+                FontFace = Library.Font,
+                TextColor3 = FromRGB(255, 255, 255),
+                Text = Watermark.Title,
+                TextSize = 14,
+                TextXAlignment = Enum.TextXAlignment.Left,
+                Size = UDim2New(0, 0, 0, 16),
+                AutomaticSize = Enum.AutomaticSize.X,
+                BackgroundTransparency = 1,
+                BorderSizePixel = 0
+            })
+            Items["Title"]:AddToTheme({ TextColor3 = "Text" })
+
+            Items["Info"] = Instances:Create("TextLabel", {
+                Parent = Items["Row"].Instance,
+                Name = "\0",
+                LayoutOrder = 3,
+                FontFace = Library.Subfont,
+                TextColor3 = FromRGB(255, 255, 255),
+                TextTransparency = 0.3,
+                RichText = true,
+                Text = "",
+                TextSize = 13,
+                TextXAlignment = Enum.TextXAlignment.Left,
+                Size = UDim2New(0, 0, 0, 16),
+                AutomaticSize = Enum.AutomaticSize.X,
+                BackgroundTransparency = 1,
+                BorderSizePixel = 0
+            })
+            Items["Info"]:AddToTheme({ TextColor3 = "Text" })
+
+            Items["Line"] = Instances:Create("Frame", {
+                Parent = Items["Frame"].Instance,
+                Name = "\0",
+                AnchorPoint = Vector2New(0, 1),
+                Position = UDim2New(0, 0, 1, 0),
+                Size = UDim2New(1, 0, 0, 2),
+                BorderSizePixel = 0,
+                BackgroundColor3 = FromRGB(255, 255, 255)
+            })
+
+            Instances:Create("UIGradient", {
+                Parent = Items["Line"].Instance,
+                Name = "\0",
+                Rotation = 0,
+                Color = RGBSequence{ RGBSequenceKeypoint(0, Library.Theme.Accent), RGBSequenceKeypoint(1, FromRGB(0, 0, 0)) }
+            }):AddToTheme({ Color = function() return RGBSequence{ RGBSequenceKeypoint(0, Library.Theme.Accent), RGBSequenceKeypoint(1, FromRGB(0, 0, 0)) } end })
+        end
+
+        function Watermark:Refresh()
+            if self.Destroyed then return end
+            local Parts = {}
+            if self.Text ~= "" then TableInsert(Parts, Escape(self.Text)) end
+            if self.ShowFPS then TableInsert(Parts, "FPS " .. self.FPS) end
+            if self.ShowPing then TableInsert(Parts, "Ping " .. self.Ping .. " ms") end
+            Items["Info"].Instance.Text = TableConcat(Parts, '  <font transparency="0.6">|</font>  ')
+            Items["Info"].Instance.Visible = #Parts > 0
+            Items["Title"].Instance.Text = self.Title
+        end
+
+        function Watermark:SetTitle(Text)
+            self.Title = tostring(Text)
+            self:Refresh()
+        end
+
+        function Watermark:SetText(Text)
+            self.Text = tostring(Text or "")
+            self:Refresh()
+        end
+
+        function Watermark:SetLogo(Logo)
+            self.Logo = Logo
+            Items["Logo"].Instance.ImageRectOffset = Vector2New(0, 0)
+            Items["Logo"].Instance.ImageRectSize = Vector2New(0, 0)
+            Library.ApplyIcon(Items["Logo"].Instance, Logo)
+        end
+
+        function Watermark:SetFPS(Bool)
+            self.ShowFPS = Bool == true
+            self:Refresh()
+        end
+
+        function Watermark:SetPing(Bool)
+            self.ShowPing = Bool == true
+            self:Refresh()
+        end
+
+        function Watermark:SetVisible(Bool)
+            self.Visible = Bool == true
+            Items["Frame"].Instance.Visible = self.Visible
+        end
+
+        function Watermark:Destroy()
+            if self.Destroyed then return end
+            self.Destroyed = true
+            if Library and Library.ActiveWatermark == self then Library.ActiveWatermark = nil end
+            Items["Gui"]:Clean()
+        end
+
+        Items["Frame"]:MakeDraggable()
+        Watermark:Refresh()
+
+        Library:Thread(function()
+            while not Watermark.Destroyed and Items["Frame"].Instance.Parent do
+                local FPS = Stats.Workspace.Heartbeat:GetValueString():match("^(%d+)") or "0"
+                local Ping = Watermark.Ping
+                pcall(function() Ping = MathFloor(Stats.Network.ServerStatsItem["Data Ping"]:GetValue() + 0.5) end)
+                if FPS ~= Watermark.FPS or Ping ~= Watermark.Ping then
+                    Watermark.FPS = FPS
+                    Watermark.Ping = Ping
+                    Watermark:Refresh()
+                end
+                task.wait(0.25)
+            end
+        end)
+
+        Library:RegisterCleanupCallback(function() Watermark:Destroy() end)
+        Library.ActiveWatermark = Watermark
+
+        return Watermark
+    end
+
     Library.MakeGlobalAnnouncement = function(self, Data)
         Data = Data or {}
         if self.ActiveGlobalAnnouncement and self.ActiveGlobalAnnouncement.Notification then
@@ -5527,7 +5989,7 @@ local Library do
                     Name = "\0",
                     Rotation = 0,
                     Color = RGBSequence{ RGBSequenceKeypoint(0, Library.Theme.Accent), RGBSequenceKeypoint(1, FromRGB(0, 0, 0)) },
-                    Transparency = NumSequence{ NumSequenceKeypoint(0, 0.1), NumSequenceKeypoint(0.6, 0.65), NumSequenceKeypoint(1, 1) }
+                    Transparency = NumSequence{ NumSequenceKeypoint(0, 0.55), NumSequenceKeypoint(0.45, 0.8), NumSequenceKeypoint(1, 1) }
                 }):AddToTheme({ Color = function() return RGBSequence{ RGBSequenceKeypoint(0, Library.Theme.Accent), RGBSequenceKeypoint(1, FromRGB(0, 0, 0)) } end })
 
                 Items["Line"] = Instances:Create("Frame", {

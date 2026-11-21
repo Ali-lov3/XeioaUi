@@ -1,10 +1,26 @@
 local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/Ali-lov3/XeioaUi/refs/heads/main/Source.lua"))()
 
+Library:MakeLoadingScreen({
+    Title = "Title",
+    Text = "Loading...",
+    Logo = "77434646025119",
+    Duration = 3,
+    Steps = {"Loading assets", "Loading modules", "Finishing up"}
+})
+
 local Window = Library:MakeWindow({
     Name = "Title",
     Logo = "77434646025119",
     HomeTab = false,
     DiscordLink = "discord.gg/example"
+})
+
+local Watermark = Library:MakeWatermark({
+    Title = "Title",
+    Logo = "77434646025119",
+    Text = "discord.gg/example",
+    ShowFPS = true,
+    ShowPing = true
 })
 
 local MainTab = Window:MakeTab({
@@ -193,6 +209,50 @@ NotificationSection:AddButton({
             Icon = "bell",
             Time = 5
         })
+    end
+})
+
+local WatermarkSection = ExtrasSubTab:AddSection({
+    Name = "Example Watermark Section",
+    Side = 2
+})
+
+WatermarkSection:AddToggle({
+    Name = "Show Watermark",
+    Flag = "ExampleWatermark",
+    Default = true,
+    Callback = function(Value)
+        Watermark:SetVisible(Value)
+    end
+})
+
+WatermarkSection:AddToggle({
+    Name = "Show FPS",
+    Flag = "ExampleWatermarkFPS",
+    Default = true,
+    Callback = function(Value)
+        Watermark:SetFPS(Value)
+    end
+})
+
+WatermarkSection:AddToggle({
+    Name = "Show Ping",
+    Flag = "ExampleWatermarkPing",
+    Default = true,
+    Callback = function(Value)
+        Watermark:SetPing(Value)
+    end
+})
+
+WatermarkSection:AddTextbox({
+    Name = "Watermark Text",
+    Flag = "ExampleWatermarkText",
+    Default = "discord.gg/example",
+    Placeholder = "Custom text",
+    Numeric = false,
+    Finished = false,
+    Callback = function(Value)
+        Watermark:SetText(Value)
     end
 })
 
