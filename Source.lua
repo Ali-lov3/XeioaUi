@@ -4610,7 +4610,7 @@ local Library do
             Parent = Widgets.MainGui.Instance,
             BackgroundColor3 = Library.Theme.Background,
             BorderSizePixel = 0,
-            Position = UDim2New(0.5, -25, 0, 30),
+            Position = IsMobile and UDim2New(1, -70, 0, 30) or UDim2New(0.5, -25, 0, 30),
             Size = UDim2New(0, 50, 0, 50),
             Visible = CheckSetting("ShowButton")
         })
@@ -5290,8 +5290,14 @@ local Library do
 
             local function GetAutoWindowMetrics()
                 local Viewport = Camera.ViewportSize
-                local Width = MathClamp(MathFloor(Viewport.X * 0.7), math.min(480, Viewport.X - 20), 730)
-                local Height = MathClamp(MathFloor(Viewport.Y * 0.9), math.min(300, Viewport.Y - 20), 530)
+                local Width, Height
+                if IsMobile then
+                    Width = MathClamp(MathFloor(Viewport.X * 0.58), math.min(420, Viewport.X - 20), 560)
+                    Height = MathClamp(MathFloor(Viewport.Y * 0.76), math.min(280, Viewport.Y - 20), 420)
+                else
+                    Width = MathClamp(MathFloor(Viewport.X * 0.7), math.min(480, Viewport.X - 20), 730)
+                    Height = MathClamp(MathFloor(Viewport.Y * 0.9), math.min(300, Viewport.Y - 20), 530)
+                end
                 Height = math.min(Height, Viewport.Y - 46)
                 return Width, Height, MathFloor((Viewport.X - Width) / 2), math.max(MathFloor((Viewport.Y - Height) / 2), 40)
             end
