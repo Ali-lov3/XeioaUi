@@ -5292,7 +5292,7 @@ local Library do
                 local Viewport = Camera.ViewportSize
                 local Width, Height
                 if IsMobile then
-                    Width = MathClamp(MathFloor(Viewport.X * 0.58), math.min(420, Viewport.X - 20), 560)
+                    Width = MathClamp(MathFloor(Viewport.X * 0.68), math.min(460, Viewport.X - 20), 640)
                     Height = MathClamp(MathFloor(Viewport.Y * 0.76), math.min(280, Viewport.Y - 20), 420)
                 else
                     Width = MathClamp(MathFloor(Viewport.X * 0.7), math.min(480, Viewport.X - 20), 730)
